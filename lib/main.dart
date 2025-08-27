@@ -1,7 +1,17 @@
+import 'package:dpr_car_rentals/src/services/FirebaseService.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async  {
+
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await dotenv.load(fileName: "env");
+    runApp(const MyApp());
+    await FirebaseService.run();
+  } catch (e) {
+    print("Error during initialization: $e");
+  }
 }
 
 class MyApp extends StatelessWidget {

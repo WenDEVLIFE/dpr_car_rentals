@@ -22,6 +22,7 @@ dependencies:
   firebase_storage: ^12.3.2
   fluttertoast: ^8.0.9
   font_awesome_flutter: ^10.3.0
+  flutter_dotenv: ^6.0.0
   intl: ^0.18.0
 
 dev_dependencies:
@@ -31,6 +32,11 @@ dev_dependencies:
 
   flutter_lints: ^5.0.0
 
+
 flutter:
 
   uses-material-design: true
+
+  assets:
+    - assets/ico/
+    - env

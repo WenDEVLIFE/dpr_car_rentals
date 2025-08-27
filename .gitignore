@@ -30,6 +30,8 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
+.android/.app/google-services.json
+.ios/.Runner/GoogleService-Info.plist
 /build/
 /coverage/
 Dockerfile

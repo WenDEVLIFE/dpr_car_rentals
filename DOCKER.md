@@ -1,41 +1,44 @@
-# Docker Setup for DPR Car Rentals Flutter App
+# Docker Setup for DPR Car Rentals Flutter App (Simple APK Server)
 
-This document explains how to build and run the DPR Car Rentals Flutter application using Docker.
+This setup creates a simple web server to download your Flutter APK.
 
 ## Prerequisites
 
-- Docker installed on your system
-- Docker Compose (optional, for easier management)
+- Docker installed
+- Flutter development environment set up
 
-## Building the Docker Image
+## Quick Start (3 Easy Steps)
 
-### Option 1: Using Docker directly
+### Step 1: Build your Flutter APK
+```bash
+flutter build apk --release
+```
 
+### Step 2: Copy APK to project root
+```bash
+cp build/app/outputs/flutter-apk/app-release.apk .
+```
+
+### Step 3: Build and run Docker container
 ```bash
 # Build the image
-docker build -t dpr-car-rentals .
+docker build -t dpr-car-rental .
 
-# Run the container
-docker run -d -p 8080:80 --name dpr-car-rentals-app dpr-car-rentals
+# Run the container  
+docker run -d -p 8080:80 --name dpr-car-rental-app dpr-car-rental
 ```
 
-### Option 2: Using Docker Compose (Recommended)
+## Access Your App
+
+Once running, visit: **http://localhost:8080**
+
+You'll see a download page with a button to download your APK.
+
+## Using Docker Compose (Alternative)
 
 ```bash
-# Build and run with docker-compose
 docker-compose up -d --build
-
-# View logs
-docker-compose logs -f
-
-# Stop the application
-docker-compose down
 ```
-
-## Accessing the Application
-
-Once the container is running, you can access the application at:
-- http://localhost:8080
 
 ## Docker Image Details
 
@@ -43,21 +46,22 @@ Once the container is running, you can access the application at:
 
 1. **Build Stage**: 
    - Uses Ubuntu 22.04 as base image
+   - Installs Java 11 and Android SDK
    - Installs Flutter SDK (version 3.24.3)
-   - Builds the Flutter web application
+   - Builds the Flutter Android APK
    
 2. **Production Stage**:
    - Uses lightweight nginx:alpine image
-   - Serves the built Flutter web app
-   - Includes gzip compression for better performance
+   - Serves the APK file for download
+   - Provides a simple web interface for APK download
 
 ### Key Features:
 
-- **Optimized for Production**: Multi-stage build reduces final image size
-- **Web-ready**: Configured nginx server with proper routing for Flutter SPA
+- **Android APK Build**: Creates a release APK ready for installation
+- **Simple Download Interface**: Web page to download the APK
+- **Optimized for Mobile**: Builds for Android platform
 - **Health Checks**: Built-in health monitoring
-- **Gzip Compression**: Enabled for better performance
-- **Proper Caching**: Flutter dependencies are cached in separate layers
+- **Lightweight Serving**: Uses nginx for efficient file serving
 
 ## Development
 

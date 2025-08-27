@@ -34,6 +34,7 @@ migrate_working_dir/
 /coverage/
 Dockerfile
 env
+app-release.apk
 
 # Symbolication related
 app.*.symbols

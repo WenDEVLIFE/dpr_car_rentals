@@ -2,6 +2,10 @@
 **/Flutter/ephemeral/
 **/Pods/
 
+# Firebase config (do NOT commit)
+GoogleService-Info.plist
+**/GoogleService-Info.plist
+
 # Xcode-related
 **/dgph
 **/xcuserdata/

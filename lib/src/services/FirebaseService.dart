@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class FirebaseService {
   static Future<void> run() async {
@@ -19,8 +20,18 @@ class FirebaseService {
 
     if (Firebase.apps.isEmpty) {
       print('Firebase is not initialized');
+      Fluttertoast.showToast(
+        msg: "Firebase is not initialized",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+      );
     } else {
       print('Firebase is initialized successfully');
+      Fluttertoast.showToast(
+        msg: "Firebase is initialized successfully",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+      );
     }
   }
 }

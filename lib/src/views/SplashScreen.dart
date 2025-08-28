@@ -48,7 +48,7 @@ class _SplashscreenState extends State<Splashscreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children:  [
             SizedBox(height: screenHeight * 0.4),
-            CustomText(text: 'DPR CAR RENTAL', size: 20, color: Colors.black, fontFamily: 'Poppins', weight: FontWeight.w700),
+            CustomText(text: 'DPR CAR RENTAL', size: 20, color: Colors.black, fontFamily: 'Inter', weight: FontWeight.w700),
             Expanded(
               child: SafeArea(
                 child: Column(

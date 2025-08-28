@@ -1,3 +1,4 @@
+import 'package:dpr_car_rentals/src/views/LoginScreen.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class _SplashscreenState extends State<Splashscreen> {
       });
       // Navigate to the next screen or perform any other action
 
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Splashscreen()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
     });
   }
 

@@ -1,3 +1,4 @@
+import 'package:dpr_car_rentals/src/widget/CustomTextField.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -10,14 +11,23 @@ class LoginScreen extends StatefulWidget {
 }
 
 class LoginState extends State<LoginScreen> {
+
+
+  void Login() async {
+
+  }
   @override
   Widget build(BuildContext context) {
 
+    final TextEditingController controller = TextEditingController();
     return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Padding(padding: EdgeInsets.all(16.0),
+              child: CustomTextField(hintText: 'Email', controller: controller),
+            ),
             ElevatedButton(
                 onPressed: (){
 

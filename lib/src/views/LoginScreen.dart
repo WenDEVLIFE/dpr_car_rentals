@@ -1,26 +1,22 @@
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
+import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
 import 'package:dpr_car_rentals/src/widget/CustomPasswordField.dart';
+import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/CustomTextField.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
-  const LoginScreen ({super.key});
-
-   @override
-  State <LoginScreen> createState() => LoginState();
-
+  @override
+  State<LoginScreen> createState() => LoginState();
 }
 
 class LoginState extends State<LoginScreen> {
-
-
-  void Login() async {
-
-  }
+  void Login() async {}
   @override
   Widget build(BuildContext context) {
-
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
 
@@ -32,37 +28,114 @@ class LoginState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            CustomText(
+                text: 'Sign In',
+                size: 32,
+                color: Colors.black,
+                fontFamily: 'Inter',
+                weight: FontWeight.w700),
             SizedBox(
               width: screenWidth * 0.8,
               height: screenWidth * 0.20,
-              child:  Padding(padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                child: CustomTextField(hintText: 'Enter your email', controller: controller, labelText: 'Email',),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                child: CustomTextField(
+                  hintText: 'Enter your email',
+                  controller: controller,
+                  labelText: 'Email',
+                ),
               ),
             ),
             SizedBox(
               width: screenWidth * 0.8,
               height: screenWidth * 0.20,
-              child: Padding(padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                  child: CustomOutlinePassField(labelText: 'Password', hintText: 'Enter your password', controller: passwordController)),
+              child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  child: CustomOutlinePassField(
+                      labelText: 'Password',
+                      hintText: 'Enter your password',
+                      controller: passwordController)),
             ),
-            ElevatedButton(
-                onPressed: (){
-
-                }, child: Text('Login', style: TextStyle(
-                color: Colors.black
+            SizedBox(
+              width: screenWidth * 0.6,
+              height: screenWidth * 0.18,
+              child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  child: CustomButton(
+                      text: 'Sign in',
+                      textColor: Colors.black,
+                      backgroundColor: Colors.blue,
+                      onPressed: () {})),
             ),
-            )),
-            ElevatedButton(
-                onPressed: (){
-
-                }, child: Text('Sign Up', style: TextStyle(
-                color: Colors.black
+            GestureDetector(
+              onDoubleTap: () {},
+              child: CustomText(
+                  text: 'Forgot Password?',
+                  size: 16,
+                  color: Colors.black,
+                  fontFamily: 'Inter',
+                  weight: FontWeight.w400),
             ),
-            ))
+            SizedBox(height: screenHeight * 0.02),
+            CustomText(
+                text: 'OR',
+                size: 18,
+                color: ThemeHelper.secondaryColor,
+                fontFamily: 'Inter',
+                weight: FontWeight.w400),
+            Divider(
+              color: ThemeHelper.secondaryColor,
+              height: screenHeight * 0.05,
+              thickness: 1,
+              indent: screenWidth * 0.1,
+              endIndent: screenWidth * 0.1,
+            ),
+            SizedBox(height: screenHeight * 0.02),
+            Row(
+              children: [
+                Spacer(),
+                SizedBox(
+                  width: screenWidth * 0.4,
+                  height: screenWidth * 0.18,
+                  child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      child: CustomButton(
+                          text: 'Google',
+                          textColor: Colors.black,
+                          backgroundColor: ThemeHelper.primaryColor,
+                          icon: FontAwesomeIcons.google,
+                          onPressed: () {})),
+                ),
+                SizedBox(
+                  width: screenWidth * 0.4,
+                  height: screenWidth * 0.18,
+                  child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      child: CustomButton(
+                          text: 'Facebook',
+                          textColor: Colors.black,
+                          backgroundColor: ThemeHelper.primaryColor,
+                          icon: FontAwesomeIcons.facebook,
+                          onPressed: () {})),
+                ),
+                Spacer(),
+              ],
+            ),
+            SizedBox(height: screenHeight * 0.02),
+            GestureDetector(
+              onDoubleTap: () {},
+              child: CustomText(
+                  text: "Don't have account? Sign Up",
+                  size: 16,
+                  color: Colors.black,
+                  fontFamily: 'Inter',
+                  weight: FontWeight.w400),
+            ),
           ],
         ),
       ),
     );
   }
-
 }

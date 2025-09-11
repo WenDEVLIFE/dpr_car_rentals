@@ -99,10 +99,8 @@ class _OTPScreenViewState extends State<OTPScreenView>
   }
 
   void _onChanged(String value, int index) {
-    // Update the controller
-    _controllers[index].text = value;
-
-    // Trigger bloc event
+    // Don't update controller here - let the text field handle it naturally
+    // Just trigger bloc event
     context.read<OtpBloc>().add(OtpDigitChanged(
           digit: value,
           index: index,
@@ -117,7 +115,7 @@ class _OTPScreenViewState extends State<OTPScreenView>
   }
 
   String _getAllOTPDigits() {
-    return context.read<OtpBloc>().state.completeOtp;
+    return _controllers.map((controller) => controller.text).join();
   }
 
   void _verifyOTP() {
@@ -138,11 +136,22 @@ class _OTPScreenViewState extends State<OTPScreenView>
   }
 
   void _syncControllersWithState(OtpState state) {
-    for (int i = 0;
-        i < _controllers.length && i < state.otpDigits.length;
-        i++) {
-      if (_controllers[i].text != state.otpDigits[i]) {
-        _controllers[i].text = state.otpDigits[i];
+    // Only sync when clearing fields or on specific state changes
+    // Don't sync during normal typing to prevent interruptions
+    bool shouldSync = false;
+
+    // Check if we need to clear all fields
+    if (state.otpDigits.every((digit) => digit.isEmpty)) {
+      shouldSync = true;
+    }
+
+    if (shouldSync) {
+      for (int i = 0;
+          i < _controllers.length && i < state.otpDigits.length;
+          i++) {
+        if (_controllers[i].text != state.otpDigits[i]) {
+          _controllers[i].text = state.otpDigits[i];
+        }
       }
     }
   }
@@ -298,6 +307,7 @@ class _OTPScreenViewState extends State<OTPScreenView>
         children: List.generate(6, (index) {
           return OTPInputField(
             controller: _controllers[index],
+            focusNode: _focusNodes[index],
             autoFocus: index == 0,
             onChanged: (value) => _onChanged(value, index),
             onCompleted: () {

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 class OTPInputField extends StatefulWidget {
   final TextEditingController controller;
+  final FocusNode? focusNode;
   final bool autoFocus;
   final Function(String) onChanged;
   final Function()? onCompleted;
@@ -11,6 +12,7 @@ class OTPInputField extends StatefulWidget {
   const OTPInputField({
     super.key,
     required this.controller,
+    this.focusNode,
     required this.autoFocus,
     required this.onChanged,
     this.onCompleted,
@@ -89,6 +91,7 @@ class _OTPInputFieldState extends State<OTPInputField>
             ),
             child: TextField(
               controller: widget.controller,
+              focusNode: widget.focusNode,
               autofocus: widget.autoFocus,
               textAlign: TextAlign.center,
               keyboardType: TextInputType.number,

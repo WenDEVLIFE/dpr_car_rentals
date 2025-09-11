@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'RegisterScreen.dart';
+import '../helpers/ThemeHelper.dart';
+import 'OTPScreen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -128,9 +130,9 @@ class LoginState extends State<LoginScreen> {
             SizedBox(height: screenHeight * 0.02),
             GestureDetector(
               onDoubleTap: () {
-
                 // navigate to register
-                Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => RegisterScreen()));
               },
               child: CustomText(
                   text: "Don't have account? Click here to Sign Up",
@@ -138,6 +140,27 @@ class LoginState extends State<LoginScreen> {
                   color: Colors.black,
                   fontFamily: 'Inter',
                   weight: FontWeight.w400),
+            ),
+            SizedBox(height: screenHeight * 0.02),
+            // Demo OTP Button
+            SizedBox(
+              width: screenWidth * 0.6,
+              height: screenWidth * 0.18,
+              child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  child: CustomButton(
+                      text: 'Demo Email OTP',
+                      textColor: Colors.white,
+                      backgroundColor: ThemeHelper.accentColor,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => OTPScreen(
+                                    email: 'user@example.com',
+                                  )),
+                        );
+                      })),
             ),
           ],
         ),

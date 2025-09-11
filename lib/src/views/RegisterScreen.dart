@@ -1,3 +1,4 @@
+import 'package:dpr_car_rentals/src/views/OTPScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -87,7 +88,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       text: 'Sign in',
                       textColor: Colors.black,
                       backgroundColor: Colors.blue,
-                      onPressed: () {})),
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => OTPScreen(email: '',)));
+                      })),
             ),
             GestureDetector(
               onDoubleTap: () {},

@@ -3,8 +3,7 @@ import 'package:dpr_car_rentals/src/views/SplashScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() async  {
-
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await dotenv.load(fileName: "env");
@@ -31,6 +30,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-
-

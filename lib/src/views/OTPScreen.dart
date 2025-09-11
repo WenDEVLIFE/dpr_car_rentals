@@ -1,12 +1,13 @@
-import 'dart:async';
+import 'package:dpr_car_rentals/src/bloc/bloc.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/OTPInputField.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class OTPScreen extends StatefulWidget {
+class OTPScreen extends StatelessWidget {
   final String email;
   final String? verificationId;
 
@@ -17,31 +18,39 @@ class OTPScreen extends StatefulWidget {
   });
 
   @override
-  State<OTPScreen> createState() => _OTPScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => OtpBloc(
+        email: email,
+        verificationId: verificationId,
+      ),
+      child: const OTPScreenView(),
+    );
+  }
 }
 
-class _OTPScreenState extends State<OTPScreen> with TickerProviderStateMixin {
+class OTPScreenView extends StatefulWidget {
+  const OTPScreenView({super.key});
+
+  @override
+  State<OTPScreenView> createState() => _OTPScreenViewState();
+}
+
+class _OTPScreenViewState extends State<OTPScreenView>
+    with TickerProviderStateMixin {
   final List<TextEditingController> _controllers =
       List.generate(6, (index) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
-  final List<GlobalKey> _fieldKeys = List.generate(6, (index) => GlobalKey());
 
   late AnimationController _slideController;
   late AnimationController _fadeController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
 
-  Timer? _timer;
-  int _resendCountdown = 60;
-  bool _canResend = false;
-  bool _isLoading = false;
-  String _errorMessage = '';
-
   @override
   void initState() {
     super.initState();
     _initializeAnimations();
-    _startResendTimer();
   }
 
   void _initializeAnimations() {
@@ -76,26 +85,10 @@ class _OTPScreenState extends State<OTPScreen> with TickerProviderStateMixin {
     _slideController.forward();
   }
 
-  void _startResendTimer() {
-    _canResend = false;
-    _resendCountdown = 60;
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        if (_resendCountdown > 0) {
-          _resendCountdown--;
-        } else {
-          _canResend = true;
-          timer.cancel();
-        }
-      });
-    });
-  }
-
   @override
   void dispose() {
     _slideController.dispose();
     _fadeController.dispose();
-    _timer?.cancel();
     for (var controller in _controllers) {
       controller.dispose();
     }
@@ -106,139 +99,99 @@ class _OTPScreenState extends State<OTPScreen> with TickerProviderStateMixin {
   }
 
   void _onChanged(String value, int index) {
+    // Update the controller
+    _controllers[index].text = value;
+
+    // Trigger bloc event
+    context.read<OtpBloc>().add(OtpDigitChanged(
+          digit: value,
+          index: index,
+        ));
+
+    // Handle focus management
     if (value.isNotEmpty && index < 5) {
       _focusNodes[index + 1].requestFocus();
     } else if (value.isEmpty && index > 0) {
       _focusNodes[index - 1].requestFocus();
     }
-
-    setState(() {
-      _errorMessage = '';
-    });
-
-    // Auto-verify when all fields are filled
-    if (_getAllOTPDigits().length == 6) {
-      _verifyOTP();
-    }
   }
 
   String _getAllOTPDigits() {
-    return _controllers.map((controller) => controller.text).join();
+    return context.read<OtpBloc>().state.completeOtp;
   }
 
-  void _verifyOTP() async {
+  void _verifyOTP() {
     final otp = _getAllOTPDigits();
-    if (otp.length != 6) {
-      _showError('Please enter complete OTP');
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      // TODO: Implement actual OTP verification logic here
-      // Example: Verify email OTP with your backend API
-      // const response = await api.verifyEmailOTP(widget.email, otp);
-      // if (response.success) { ... }
-
-      if (mounted) {
-        // Navigate to next screen on success
-        _showSuccessAndNavigate();
-      }
-    } catch (e) {
-      _showError('Invalid OTP. Please try again.');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
+    context.read<OtpBloc>().add(OtpVerificationRequested(otp: otp));
   }
 
-  void _showError(String message) {
-    setState(() {
-      _errorMessage = message;
-    });
-  }
-
-  void _showSuccessAndNavigate() {
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 8),
-            const Text('Email verified successfully!'),
-          ],
-        ),
-        backgroundColor: ThemeHelper.accentColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
-
-    // Navigate to home or dashboard
-    // Navigator.pushReplacementNamed(context, '/home');
-  }
-
-  void _resendOTP() async {
-    if (!_canResend) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // TODO: Implement actual resend email OTP logic here
-      // Example: await api.resendEmailOTP(widget.email);
-      await Future.delayed(const Duration(seconds: 1));
-
-      _startResendTimer();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Email verification code sent successfully!'),
-            backgroundColor: ThemeHelper.accentColor,
-            behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-        );
-      }
-    } catch (e) {
-      _showError('Failed to resend OTP. Please try again.');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
+  void _resendOTP() {
+    context.read<OtpBloc>().add(const OtpResendRequested());
   }
 
   void _clearAllFields() {
+    context.read<OtpBloc>().add(const OtpFieldsCleared());
     for (var controller in _controllers) {
       controller.clear();
     }
     _focusNodes[0].requestFocus();
-    setState(() {
-      _errorMessage = '';
-    });
+  }
+
+  void _syncControllersWithState(OtpState state) {
+    for (int i = 0;
+        i < _controllers.length && i < state.otpDigits.length;
+        i++) {
+      if (_controllers[i].text != state.otpDigits[i]) {
+        _controllers[i].text = state.otpDigits[i];
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    return BlocListener<OtpBloc, OtpState>(
+      listener: (context, state) {
+        // Sync controllers with state
+        _syncControllersWithState(state);
+
+        // Handle navigation and snackbars based on state changes
+        if (state.isVerificationSuccessful) {
+          _showSuccessSnackBar(context, state.successMessage);
+          // Navigate to next screen
+          // Navigator.pushReplacementNamed(context, '/home');
+        } else if (state.isResendSuccessful) {
+          _showSuccessSnackBar(context, state.successMessage);
+        }
+      },
+      child: BlocBuilder<OtpBloc, OtpState>(
+        builder: (context, state) {
+          return _buildScaffold(context, state);
+        },
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(BuildContext context, String? message) {
+    if (message != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 8),
+              Text(message),
+            ],
+          ),
+          backgroundColor: ThemeHelper.accentColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
+  }
+
+  Widget _buildScaffold(BuildContext context, OtpState state) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: ThemeHelper.primaryColor,
@@ -273,12 +226,12 @@ class _OTPScreenState extends State<OTPScreen> with TickerProviderStateMixin {
                   const SizedBox(height: 24),
 
                   // Error Message
-                  if (_errorMessage.isNotEmpty) _buildErrorMessage(),
+                  if (state.hasError) _buildErrorMessage(state),
 
                   const SizedBox(height: 32),
 
                   // Verify Button
-                  _buildVerifyButton(screenWidth),
+                  _buildVerifyButton(screenWidth, state),
 
                   const SizedBox(height: 20),
 
@@ -288,7 +241,7 @@ class _OTPScreenState extends State<OTPScreen> with TickerProviderStateMixin {
                   const Spacer(),
 
                   // Resend Section
-                  _buildResendSection(),
+                  _buildResendSection(state),
 
                   const SizedBox(height: 20),
                 ],
@@ -326,7 +279,8 @@ class _OTPScreenState extends State<OTPScreen> with TickerProviderStateMixin {
         ),
         const SizedBox(height: 12),
         CustomText(
-          text: 'Enter the 6-digit code sent to\n${_formatEmail(widget.email)}',
+          text:
+              'Enter the 6-digit code sent to\n${_formatEmail(context.read<OtpBloc>().email)}',
           size: 16,
           color: ThemeHelper.textColor1,
           fontFamily: 'Inter',
@@ -357,7 +311,7 @@ class _OTPScreenState extends State<OTPScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildErrorMessage() {
+  Widget _buildErrorMessage(OtpState state) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -371,7 +325,7 @@ class _OTPScreenState extends State<OTPScreen> with TickerProviderStateMixin {
           const SizedBox(width: 8),
           Expanded(
             child: CustomText(
-              text: _errorMessage,
+              text: state.errorMessage,
               size: 14,
               color: Colors.red,
               fontFamily: 'Inter',
@@ -383,17 +337,18 @@ class _OTPScreenState extends State<OTPScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildVerifyButton(double screenWidth) {
+  Widget _buildVerifyButton(double screenWidth, OtpState state) {
     return SizedBox(
       width: screenWidth * 0.8,
       height: 56,
       child: CustomButton(
-        text: _isLoading ? 'Verifying...' : 'Verify OTP',
+        text: state.isVerifying ? 'Verifying...' : 'Verify OTP',
         textColor: Colors.white,
-        backgroundColor:
-            _isLoading ? ThemeHelper.textColor1 : ThemeHelper.accentColor,
-        onPressed: _isLoading ? () {} : _verifyOTP,
-        icon: _isLoading ? null : FontAwesomeIcons.check,
+        backgroundColor: state.isVerifying
+            ? ThemeHelper.textColor1
+            : ThemeHelper.accentColor,
+        onPressed: state.isVerifying ? () {} : _verifyOTP,
+        icon: state.isVerifying ? null : FontAwesomeIcons.check,
       ),
     );
   }
@@ -432,7 +387,7 @@ class _OTPScreenState extends State<OTPScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildResendSection() {
+  Widget _buildResendSection(OtpState state) {
     return Column(
       children: [
         const CustomText(
@@ -443,7 +398,7 @@ class _OTPScreenState extends State<OTPScreen> with TickerProviderStateMixin {
           weight: FontWeight.w400,
         ),
         const SizedBox(height: 12),
-        if (_canResend)
+        if (state.canResend)
           GestureDetector(
             onTap: _resendOTP,
             child: Container(
@@ -483,7 +438,7 @@ class _OTPScreenState extends State<OTPScreen> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(8),
             ),
             child: CustomText(
-              text: 'Resend in ${_resendCountdown}s',
+              text: 'Resend in ${state.resendCountdown}s',
               size: 16,
               color: ThemeHelper.textColor1,
               fontFamily: 'Inter',

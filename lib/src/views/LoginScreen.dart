@@ -6,6 +6,8 @@ import 'package:dpr_car_rentals/src/widget/CustomTextField.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'RegisterScreen.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -125,9 +127,13 @@ class LoginState extends State<LoginScreen> {
             ),
             SizedBox(height: screenHeight * 0.02),
             GestureDetector(
-              onDoubleTap: () {},
+              onDoubleTap: () {
+
+                // navigate to register
+                Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
+              },
               child: CustomText(
-                  text: "Don't have account? Sign Up",
+                  text: "Don't have account? Click here to Sign Up",
                   size: 16,
                   color: Colors.black,
                   fontFamily: 'Inter',

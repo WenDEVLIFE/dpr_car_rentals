@@ -2,17 +2,27 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'otp_event.dart';
 import 'otp_state.dart';
+import '../services/GmailService.dart';
+import '../repository/RegisterRepository.dart';
 
 class OtpBloc extends Bloc<OtpEvent, OtpState> {
   Timer? _resendTimer;
   final String email;
   final String? verificationId;
+  final RegisterRepository _registerRepository;
+  String _generatedOTP = '';
+  Map<String, dynamic>? _userData;
 
   OtpBloc({
     required this.email,
     this.verificationId,
-  }) : super(const OtpState()) {
+    RegisterRepository? registerRepository,
+    Map<String, dynamic>? userData,
+  })  : _registerRepository = registerRepository ?? RegisterRepositoryImpl(),
+        _userData = userData,
+        super(const OtpState()) {
     // Register event handlers
+    on<OtpInitialized>(_onOtpInitialized);
     on<OtpDigitChanged>(_onOtpDigitChanged);
     on<OtpVerificationRequested>(_onOtpVerificationRequested);
     on<OtpResendRequested>(_onOtpResendRequested);
@@ -22,14 +32,53 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
     on<OtpResendTimerStarted>(_onOtpResendTimerStarted);
     on<OtpErrorCleared>(_onOtpErrorCleared);
 
-    // Start the initial resend timer
-    add(const OtpResendTimerStarted());
+    // Initialize the OTP and send it via email
+    add(const OtpInitialized());
   }
 
   @override
   Future<void> close() {
     _resendTimer?.cancel();
     return super.close();
+  }
+
+  /// Handle OTP initialization - generate and send OTP
+  Future<void> _onOtpInitialized(
+    OtpInitialized event,
+    Emitter<OtpState> emit,
+  ) async {
+    emit(state.copyWith(
+      status: OtpStatus.loading,
+      errorMessage: '',
+    ));
+
+    try {
+      // Generate OTP
+      _generatedOTP = await _registerRepository.generateOTP();
+
+      // Send OTP via Gmail service
+      final isSent = await GmailService.sendEmail(email, _generatedOTP);
+
+      if (isSent) {
+        emit(state.copyWith(
+          status: OtpStatus.initial,
+          successMessage: 'Verification code sent to your email!',
+        ));
+
+        // Start the resend timer
+        add(const OtpResendTimerStarted());
+      } else {
+        emit(state.copyWith(
+          status: OtpStatus.failure,
+          errorMessage: 'Failed to send verification code. Please try again.',
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        status: OtpStatus.failure,
+        errorMessage: 'Failed to initialize OTP. Please try again.',
+      ));
+    }
   }
 
   /// Handle OTP digit changes
@@ -73,22 +122,41 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
     ));
 
     try {
-      // Simulate API call for email OTP verification
-      await Future.delayed(const Duration(seconds: 2));
-
-      // TODO: Replace with actual API call
-      // Example: await _authService.verifyEmailOTP(email, event.otp);
-
-      // For demo purposes, assume verification is successful
-      // In real implementation, this would depend on the API response
-      final isVerificationSuccessful = _simulateOtpVerification(event.otp);
+      // Verify the OTP
+      final isVerificationSuccessful = event.otp == _generatedOTP;
 
       if (isVerificationSuccessful) {
-        emit(state.copyWith(
-          status: OtpStatus.success,
-          isComplete: true,
-          successMessage: 'Email verified successfully!',
-        ));
+        // Register the user after successful OTP verification
+        bool isRegistered = true;
+
+        // If we have user data, use it for registration
+        if (_userData != null) {
+          isRegistered = await _registerRepository.registerUser(
+            email: _userData!['email'] ?? email,
+            fullName: _userData!['name'] ?? 'User',
+            password: _userData!['password'] ?? 'password',
+          );
+        } else {
+          // Default registration if no user data provided
+          isRegistered = await _registerRepository.registerUser(
+            email: email,
+            fullName: 'User',
+            password: 'password',
+          );
+        }
+
+        if (isRegistered) {
+          emit(state.copyWith(
+            status: OtpStatus.success,
+            isComplete: true,
+            successMessage: 'Email verified and user registered successfully!',
+          ));
+        } else {
+          emit(state.copyWith(
+            status: OtpStatus.failure,
+            errorMessage: 'Registration failed. Please try again.',
+          ));
+        }
       } else {
         emit(state.copyWith(
           status: OtpStatus.failure,
@@ -116,19 +184,26 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
     ));
 
     try {
-      // Simulate resend API call
-      await Future.delayed(const Duration(seconds: 1));
+      // Generate new OTP
+      _generatedOTP = await _registerRepository.generateOTP();
 
-      // TODO: Replace with actual API call
-      // Example: await _authService.resendEmailOTP(email);
+      // Send OTP via Gmail service
+      final isSent = await GmailService.sendEmail(email, _generatedOTP);
 
-      emit(state.copyWith(
-        status: OtpStatus.resendSuccess,
-        successMessage: 'Email verification code sent successfully!',
-      ));
+      if (isSent) {
+        emit(state.copyWith(
+          status: OtpStatus.resendSuccess,
+          successMessage: 'Email verification code sent successfully!',
+        ));
 
-      // Start the countdown timer again
-      add(const OtpResendTimerStarted());
+        // Start the countdown timer again
+        add(const OtpResendTimerStarted());
+      } else {
+        emit(state.copyWith(
+          status: OtpStatus.resendFailure,
+          errorMessage: 'Failed to resend OTP. Please try again.',
+        ));
+      }
     } catch (e) {
       emit(state.copyWith(
         status: OtpStatus.resendFailure,
@@ -198,13 +273,5 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
       errorMessage: '',
       status: OtpStatus.initial,
     ));
-  }
-
-  /// Simulate OTP verification (for demo purposes)
-  /// In a real implementation, this would be an actual API call
-  bool _simulateOtpVerification(String otp) {
-    // For demo purposes, accept any 6-digit OTP
-    // In real implementation, this would validate against the server
-    return otp.length == 6 && otp.contains(RegExp(r'^[0-9]+$'));
   }
 }

@@ -10,11 +10,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class OTPScreen extends StatelessWidget {
   final String email;
   final String? verificationId;
+  final Map<String, dynamic>? userData;
 
   const OTPScreen({
     super.key,
     required this.email,
     this.verificationId,
+    this.userData,
   });
 
   @override
@@ -24,13 +26,15 @@ class OTPScreen extends StatelessWidget {
         email: email,
         verificationId: verificationId,
       ),
-      child: const OTPScreenView(),
+      child: OTPScreenView(userData: userData),
     );
   }
 }
 
 class OTPScreenView extends StatefulWidget {
-  const OTPScreenView({super.key});
+  final Map<String, dynamic>? userData;
+
+  const OTPScreenView({super.key, this.userData});
 
   @override
   State<OTPScreenView> createState() => _OTPScreenViewState();
@@ -166,9 +170,16 @@ class _OTPScreenViewState extends State<OTPScreenView>
         // Handle navigation and snackbars based on state changes
         if (state.isVerificationSuccessful) {
           _showSuccessSnackBar(context, state.successMessage);
-          // Navigate to next screen
-          // Navigator.pushReplacementNamed(context, '/home');
+          // Navigate to next screen after successful registration
+          Future.delayed(const Duration(seconds: 2), () {
+            Navigator.pushReplacementNamed(
+                context, '/home'); // or whatever your home route is
+          });
         } else if (state.isResendSuccessful) {
+          _showSuccessSnackBar(context, state.successMessage);
+        } else if (state.status == OtpStatus.initial &&
+            state.successMessage != null) {
+          // Show initial success message (OTP sent)
           _showSuccessSnackBar(context, state.successMessage);
         }
       },

@@ -7,6 +7,14 @@ abstract class OtpEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+/// Event triggered when OTP initialization starts
+class OtpInitialized extends OtpEvent {
+  const OtpInitialized();
+
+  @override
+  List<Object?> get props => [];
+}
+
 /// Event triggered when a digit is entered or changed in the OTP field
 class OtpDigitChanged extends OtpEvent {
   final String digit;

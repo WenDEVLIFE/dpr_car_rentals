@@ -1,5 +1,6 @@
 import 'package:dpr_car_rentals/src/bloc/bloc.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
+import 'package:dpr_car_rentals/src/views/LoginScreen.dart';
 import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/OTPInputField.dart';
@@ -91,6 +92,11 @@ class _OTPScreenViewState extends State<OTPScreenView>
 
   @override
   void dispose() {
+    // Clear any pending snackbars
+    if (mounted) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+    }
+
     _slideController.dispose();
     _fadeController.dispose();
     for (var controller in _controllers) {
@@ -164,23 +170,38 @@ class _OTPScreenViewState extends State<OTPScreenView>
   Widget build(BuildContext context) {
     return BlocListener<OtpBloc, OtpState>(
       listener: (context, state) {
+        // Only show messages if the widget is still mounted
+        if (!mounted) return;
+
         // Sync controllers with state
         _syncControllersWithState(state);
 
         // Handle navigation and snackbars based on state changes
-        if (state.isVerificationSuccessful) {
+        if (state.isVerificationSuccessful && state.shouldShowMessage) {
           _showSuccessSnackBar(context, state.successMessage);
-          // Navigate to next screen after successful registration
+          // Navigate back to login screen after successful registration
           Future.delayed(const Duration(seconds: 2), () {
-            Navigator.pushReplacementNamed(
-                context, '/home'); // or whatever your home route is
+            if (mounted) {
+              // Clear the navigation stack and go to login
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LoginScreen(),
+                  ));
+            }
           });
-        } else if (state.isResendSuccessful) {
+        } else if (state.isResendSuccessful && state.shouldShowMessage) {
           _showSuccessSnackBar(context, state.successMessage);
         } else if (state.status == OtpStatus.initial &&
-            state.successMessage != null) {
-          // Show initial success message (OTP sent)
-          _showSuccessSnackBar(context, state.successMessage);
+            state.successMessage != null &&
+            state.shouldShowMessage &&
+            mounted) {
+          // Show initial success message (OTP sent) only once
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _showSuccessSnackBar(context, state.successMessage);
+            }
+          });
         }
       },
       child: BlocBuilder<OtpBloc, OtpState>(
@@ -192,19 +213,23 @@ class _OTPScreenViewState extends State<OTPScreenView>
   }
 
   void _showSuccessSnackBar(BuildContext context, String? message) {
-    if (message != null) {
+    if (message != null && mounted) {
+      // Remove any existing snackbars first
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
               const Icon(Icons.check_circle, color: Colors.white),
               const SizedBox(width: 8),
-              Text(message),
+              Expanded(child: Text(message)),
             ],
           ),
           backgroundColor: ThemeHelper.accentColor,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          duration: const Duration(seconds: 2),
         ),
       );
     }

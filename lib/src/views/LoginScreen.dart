@@ -143,24 +143,6 @@ class LoginState extends State<LoginScreen> {
                   weight: FontWeight.w400),
             ),
             SizedBox(height: screenHeight * 0.02),
-            // Demo OTP Button
-            SizedBox(
-              width: screenWidth * 0.6,
-              height: screenWidth * 0.18,
-              child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                  child: CustomButton(
-                      text: 'Demo Email OTP',
-                      textColor: Colors.white,
-                      backgroundColor: ThemeHelper.accentColor,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => UserMainView(
-                              )));
-                      })),
-            ),
           ],
         ),
       ),

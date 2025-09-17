@@ -63,7 +63,15 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
         emit(state.copyWith(
           status: OtpStatus.initial,
           successMessage: 'Verification code sent to your email!',
+          shouldShowMessage: true,
         ));
+
+        // Clear the shouldShowMessage flag after emitting
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (!isClosed) {
+            emit(state.copyWith(shouldShowMessage: false));
+          }
+        });
 
         // Start the resend timer
         add(const OtpResendTimerStarted());
@@ -150,7 +158,15 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
             status: OtpStatus.success,
             isComplete: true,
             successMessage: 'Email verified and user registered successfully!',
+            shouldShowMessage: true,
           ));
+
+          // Clear the shouldShowMessage flag after emitting
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (!isClosed) {
+              emit(state.copyWith(shouldShowMessage: false));
+            }
+          });
         } else {
           emit(state.copyWith(
             status: OtpStatus.failure,
@@ -194,7 +210,15 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
         emit(state.copyWith(
           status: OtpStatus.resendSuccess,
           successMessage: 'Email verification code sent successfully!',
+          shouldShowMessage: true,
         ));
+
+        // Clear the shouldShowMessage flag after emitting
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (!isClosed) {
+            emit(state.copyWith(shouldShowMessage: false));
+          }
+        });
 
         // Start the countdown timer again
         add(const OtpResendTimerStarted());

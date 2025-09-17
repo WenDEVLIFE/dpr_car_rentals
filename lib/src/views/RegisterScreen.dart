@@ -19,7 +19,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   void _handleRegister() {
     final name = _nameController.text.trim();
@@ -28,7 +29,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final confirmPassword = _confirmPasswordController.text;
 
     // Basic validation
-    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all fields'),
@@ -64,6 +68,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       MaterialPageRoute(
         builder: (context) => OTPScreen(
           email: email,
+          userData: {
+            'name': name,
+            'email': email,
+            'password': password,
+          },
         ),
       ),
     );
@@ -101,7 +110,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: screenWidth * 0.8,
                 height: screenWidth * 0.20,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                   child: CustomTextField(
                     hintText: 'Enter your full name',
                     controller: _nameController,
@@ -113,7 +123,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: screenWidth * 0.8,
                 height: screenWidth * 0.20,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                   child: CustomTextField(
                     hintText: 'Enter your email',
                     controller: _emailController,
@@ -126,7 +137,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: screenWidth * 0.8,
                 height: screenWidth * 0.20,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                   child: CustomOutlinePassField(
                     labelText: 'Password',
                     hintText: 'Enter your password',
@@ -138,7 +150,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: screenWidth * 0.8,
                 height: screenWidth * 0.20,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                   child: CustomOutlinePassField(
                     labelText: 'Confirm Password',
                     hintText: 'Enter your confirm password',
@@ -150,7 +163,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: screenWidth * 0.6,
                 height: screenWidth * 0.18,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                   child: CustomButton(
                     text: 'Sign Up',
                     textColor: Colors.white,
@@ -202,7 +216,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     width: screenWidth * 0.4,
                     height: screenWidth * 0.18,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 16),
                       child: CustomButton(
                         text: 'Google',
                         textColor: Colors.black,
@@ -216,7 +231,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     width: screenWidth * 0.4,
                     height: screenWidth * 0.18,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 16),
                       child: CustomButton(
                         text: 'Facebook',
                         textColor: Colors.black,

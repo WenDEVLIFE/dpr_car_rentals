@@ -20,6 +20,7 @@ class OtpState extends Equatable {
   final bool canResend;
   final bool isComplete;
   final String? successMessage;
+  final bool shouldShowMessage;
 
   const OtpState({
     this.status = OtpStatus.initial,
@@ -29,6 +30,7 @@ class OtpState extends Equatable {
     this.canResend = false,
     this.isComplete = false,
     this.successMessage,
+    this.shouldShowMessage = false,
   });
 
   /// Copy constructor for creating new state instances
@@ -40,6 +42,7 @@ class OtpState extends Equatable {
     bool? canResend,
     bool? isComplete,
     String? successMessage,
+    bool? shouldShowMessage,
   }) {
     return OtpState(
       status: status ?? this.status,
@@ -49,6 +52,7 @@ class OtpState extends Equatable {
       canResend: canResend ?? this.canResend,
       isComplete: isComplete ?? this.isComplete,
       successMessage: successMessage ?? this.successMessage,
+      shouldShowMessage: shouldShowMessage ?? this.shouldShowMessage,
     );
   }
 
@@ -82,6 +86,7 @@ class OtpState extends Equatable {
         canResend,
         isComplete,
         successMessage,
+        shouldShowMessage,
       ];
 
   @override
@@ -94,6 +99,7 @@ class OtpState extends Equatable {
       canResend: $canResend,
       isComplete: $isComplete,
       successMessage: $successMessage,
+      shouldShowMessage: $shouldShowMessage,
     }''';
   }
 }

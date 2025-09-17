@@ -1,4 +1,5 @@
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
+import 'package:dpr_car_rentals/src/views/user/UserMainView.dart';
 import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
 import 'package:dpr_car_rentals/src/widget/CustomPasswordField.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
@@ -156,10 +157,8 @@ class LoginState extends State<LoginScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => OTPScreen(
-                                    email: 'user@example.com',
-                                  )),
-                        );
+                              builder: (context) => UserMainView(
+                              )));
                       })),
             ),
           ],

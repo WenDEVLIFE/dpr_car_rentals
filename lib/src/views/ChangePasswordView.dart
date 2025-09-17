@@ -108,6 +108,10 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
         elevation: 0,
         backgroundColor: ThemeHelper.primaryColor,
         foregroundColor: ThemeHelper.primaryColor,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       backgroundColor: ThemeHelper.primaryColor,
       body: Center(

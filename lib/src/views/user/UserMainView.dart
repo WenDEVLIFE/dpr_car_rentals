@@ -34,6 +34,20 @@ class _UserMainViewState extends State<UserMainView> {
         style: TextStyle(fontSize: 24),
       ),
     ),
+
+    const Center(
+      child: Text(
+        'Search Screen',
+        style: TextStyle(fontSize: 24),
+      ),
+    ),
+
+    const Center(
+      child: Text(
+        'Search Screen',
+        style: TextStyle(fontSize: 24),
+      ),
+    ),
   ];
 
   void _onTabTapped(int index) {

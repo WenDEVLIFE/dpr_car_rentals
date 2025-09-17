@@ -70,7 +70,12 @@ class LoginState extends State<LoginScreen> {
                       text: 'Sign in',
                       textColor: Colors.black,
                       backgroundColor: Colors.blue,
-                      onPressed: () {})),
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => UserMainView()));
+                      })),
             ),
             GestureDetector(
               onDoubleTap: () {},

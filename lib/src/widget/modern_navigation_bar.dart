@@ -26,13 +26,16 @@ class ModernNavigationBar extends StatelessWidget {
       child: SafeArea(
         child: Container(
           height: 70,
-          padding: const EdgeInsets.symmetric(horizontal: 15),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(0, Icons.home_rounded, 'Home'),
-              _buildNavItem(1, Icons.search_rounded, 'Search'),
-              _buildNavItem(2, Icons.person_rounded, 'Profile'),
+              Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
+              Expanded(child: _buildNavItem(1, Icons.car_rental, 'Rent a Car')),
+              Expanded(child: _buildNavItem(2, Icons.history, 'History')),
+              Expanded(
+                  child: _buildNavItem(3, Icons.chat_bubble_outline, 'Chat')),
+              Expanded(child: _buildNavItem(4, Icons.list_outlined, 'Menu')),
             ],
           ),
         ),
@@ -42,33 +45,37 @@ class ModernNavigationBar extends StatelessWidget {
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = currentIndex == index;
-    
+
     return InkWell(
       onTap: () => onTap(index),
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
               color: isSelected ? Colors.blue : Colors.grey,
-              size: 26,
+              size: 24,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
                 color: isSelected ? Colors.blue : Colors.grey,
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

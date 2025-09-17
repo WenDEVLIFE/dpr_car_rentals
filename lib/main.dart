@@ -1,6 +1,11 @@
+import 'package:dpr_car_rentals/src/bloc/LoginBloc.dart';
+import 'package:dpr_car_rentals/src/bloc/UserBloc.dart';
+import 'package:dpr_car_rentals/src/repository/LoginRepository.dart';
+import 'package:dpr_car_rentals/src/repository/UserRepository.dart';
 import 'package:dpr_car_rentals/src/services/FirebaseService.dart';
 import 'package:dpr_car_rentals/src/views/SplashScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
@@ -20,13 +25,23 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<LoginBloc>(
+          create: (context) => LoginBloc(),
+        ),
+        BlocProvider<UserBloc>(
+          create: (context) => UserBloc(UserRepositoryImpl()),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        ),
+        home: const Splashscreen(),
       ),
-      home: const Splashscreen(),
     );
   }
 }

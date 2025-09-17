@@ -42,12 +42,12 @@ class ModernNavigationBar extends StatelessWidget {
         Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
         Expanded(child: _buildNavItem(1, Icons.car_rental, 'Cars')),
              Expanded(child: _buildNavItem(2, Icons.person, 'Users')),
-        Expanded(child: _buildNavItem(4, Icons.list_outlined, 'Menu')),
+        Expanded(child: _buildNavItem(3, Icons.list_outlined, 'Menu')),
             ] else if (role == 'owner') ...[
             Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
         Expanded(child: _buildNavItem(1, Icons.car_rental, 'Cars')),
         Expanded(child: _buildNavItem(2, Icons.book, 'Bookings')),
-        Expanded(child: _buildNavItem(2, Icons.chat_bubble_outline, 'Chats')),
+        Expanded(child: _buildNavItem(3, Icons.chat_bubble_outline, 'Chats')),
         Expanded(child: _buildNavItem(4, Icons.list_outlined, 'Menu')),
                ]
             ]

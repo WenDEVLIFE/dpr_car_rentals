@@ -7,6 +7,7 @@ abstract class RegisterRepository {
     required String email,
     required String fullName,
     required String password,
+    String role = 'user',
   });
 
   Future<String> generateOTP();
@@ -26,6 +27,7 @@ class RegisterRepositoryImpl extends RegisterRepository {
     required String email,
     required String fullName,
     required String password,
+    String role = 'user',
   }) async {
     try {
       // Create user with email and password
@@ -40,7 +42,7 @@ class RegisterRepositoryImpl extends RegisterRepository {
         'UserID': userCredential.user?.uid,
         'Email': email,
         'FullName': fullName,
-        'Role': 'user',
+        'Role': role,
         'createdAt': FieldValue.serverTimestamp(),
       });
 

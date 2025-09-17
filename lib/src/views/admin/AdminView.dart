@@ -1,4 +1,5 @@
 import 'package:dpr_car_rentals/src/views/MenuView.dart';
+import 'package:dpr_car_rentals/src/views/admin/UserScreen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -29,13 +30,8 @@ class _DashboardViewState extends State<AdminDashboardView> {
         style: TextStyle(fontSize: 24),
       ),
     ),
-    // Profile Screen
-    const Center(
-      child: Text(
-        'Profile Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
+
+    const UserScreen(),
 
     const MenuView(),
 
@@ -50,10 +46,6 @@ class _DashboardViewState extends State<AdminDashboardView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('DPR Car Rentals'),
-        elevation: 0,
-      ),
       body: _screens[_currentIndex],
       bottomNavigationBar: ModernNavigationBar(
         currentIndex: _currentIndex,

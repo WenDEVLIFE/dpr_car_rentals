@@ -49,8 +49,16 @@ class _SplashscreenState extends State<Splashscreen> {
             textColor: Colors.white,
             fontSize: 16.0);
 
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => UserMainView()));
+       if (currentUser['role'].toString().toLowerCase() == 'admin') {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => AdminDashboardView()));
+        } else if (currentUser['role'].toString().toLowerCase() == 'owner') {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => OwnerView()));
+        } else {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => UserMainView()));
+        }
       } else {
         // No user signed in, go to login
         Fluttertoast.showToast(

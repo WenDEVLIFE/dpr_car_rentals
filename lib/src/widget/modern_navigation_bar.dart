@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class ModernNavigationBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
+  final String role;
 
   const ModernNavigationBar({
     Key? key,
     required this.currentIndex,
     required this.onTap,
+    required this.role,
   }) : super(key: key);
 
   @override
@@ -30,13 +32,26 @@ class ModernNavigationBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
-              Expanded(child: _buildNavItem(1, Icons.car_rental, 'Rent a Car')),
-              Expanded(child: _buildNavItem(2, Icons.history, 'History')),
-              Expanded(
-                  child: _buildNavItem(3, Icons.chat_bubble_outline, 'Chat')),
-              Expanded(child: _buildNavItem(4, Icons.list_outlined, 'Menu')),
-            ],
+           if (role == 'user') ...[
+            Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
+        Expanded(child: _buildNavItem(1, Icons.car_rental, 'Rent a Car')),
+        Expanded(child: _buildNavItem(2, Icons.history, 'History')),
+        Expanded(child: _buildNavItem(3, Icons.chat_bubble_outline, 'Chat')),
+        Expanded(child: _buildNavItem(4, Icons.list_outlined, 'Menu')),
+           ] else if (role == 'admin') ...[
+        Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
+        Expanded(child: _buildNavItem(1, Icons.car_rental, 'Cars')),
+             Expanded(child: _buildNavItem(2, Icons.person, 'Users')),
+        Expanded(child: _buildNavItem(4, Icons.list_outlined, 'Menu')),
+            ] else if (role == 'Owner') ...[
+            Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
+        Expanded(child: _buildNavItem(1, Icons.car_rental, 'Cars')),
+        Expanded(child: _buildNavItem(2, Icons.book, 'Bookings')),
+        Expanded(child: _buildNavItem(2, Icons.chat_bubble_outline, 'Chats')),
+        Expanded(child: _buildNavItem(4, Icons.list_outlined, 'Menu')),
+               ]
+            ]
+
           ),
         ),
       ),

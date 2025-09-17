@@ -67,6 +67,7 @@ class _UserMainViewState extends State<UserMainView> {
       bottomNavigationBar: ModernNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
+        role: 'user',
       ),
     );
   }

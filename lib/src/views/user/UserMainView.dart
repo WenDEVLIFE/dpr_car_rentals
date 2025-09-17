@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../LoginScreen.dart';
 import '../../widget/modern_navigation_bar.dart';
+import '../MenuView.dart';
 
 class UserMainView extends StatefulWidget {
   const UserMainView({super.key});
@@ -44,12 +45,7 @@ class _UserMainViewState extends State<UserMainView> {
       ),
     ),
 
-    const Center(
-      child: Text(
-        'Search Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
+    const MenuView(),
   ];
 
   void _onTabTapped(int index) {
@@ -61,23 +57,6 @@ class _UserMainViewState extends State<UserMainView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('DPR Car Rentals'),
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => LoginScreen()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
-      ),
       body: _screens[_currentIndex],
       bottomNavigationBar: ModernNavigationBar(
         currentIndex: _currentIndex,

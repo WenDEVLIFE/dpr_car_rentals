@@ -1,3 +1,4 @@
+import 'package:dpr_car_rentals/src/views/MenuView.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -44,12 +45,7 @@ class _OwnerViewState extends State<OwnerView> {
       ),
     ),
 
-    const Center(
-      child: Text(
-        'Search Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
+    const MenuView(),
   ];
 
   void _onTabTapped(int index) {

@@ -48,8 +48,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         print('Login successful: $userData');
         String email = userData['Email'].toString();
         String role = userData['Role'].toString();
-        String fullName = userData['FUllName'].toString();
-        String uid = userData['UserID'].toString();
+        String fullName = userData['FullName'].toString();
+        String uid = userData['Uid'].toString();
 
         // save the session
         sessionHelpers.saveUserInfo(

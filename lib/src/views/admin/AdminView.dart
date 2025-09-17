@@ -1,3 +1,4 @@
+import 'package:dpr_car_rentals/src/views/MenuView.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -36,19 +37,8 @@ class _DashboardViewState extends State<AdminDashboardView> {
       ),
     ),
 
-    const Center(
-      child: Text(
-        'Search Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
+    const MenuView(),
 
-    const Center(
-      child: Text(
-        'Search Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
   ];
 
   void _onTabTapped(int index) {

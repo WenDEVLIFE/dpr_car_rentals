@@ -36,6 +36,8 @@ class _SplashscreenState extends State<Splashscreen> {
       });
 
       var currentUser = await sessionHelpers.getUserInfo();
+
+      print('Current user info: $currentUser');
       if (currentUser != null) {
         // User is signed in, navigate to user main view
         Fluttertoast.showToast(

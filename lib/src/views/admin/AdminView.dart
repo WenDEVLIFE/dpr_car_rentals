@@ -3,15 +3,14 @@ import 'package:flutter/material.dart';
 
 import '../../widget/modern_navigation_bar.dart';
 
-class OwnerView extends StatefulWidget {
-
-  const OwnerView({super.key});
+class AdminDashboardView extends StatefulWidget {
+  const AdminDashboardView({super.key});
 
   @override
-  State<OwnerView> createState() => _OwnerViewState();
+  State<AdminDashboardView> createState() => _DashboardViewState();
 }
 
-class _OwnerViewState extends State<OwnerView> {
+class _DashboardViewState extends State<AdminDashboardView> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
@@ -69,7 +68,7 @@ class _OwnerViewState extends State<OwnerView> {
       bottomNavigationBar: ModernNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
-        role: 'owner',
+        role: 'admin',
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:dpr_car_rentals/src/bloc/LoginBloc.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/views/user/UserMainView.dart';
 import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
@@ -8,8 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'RegisterScreen.dart';
-import '../helpers/ThemeHelper.dart';
-import 'OTPScreen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,7 +18,15 @@ class LoginScreen extends StatefulWidget {
 }
 
 class LoginState extends State<LoginScreen> {
-  void Login() async {}
+
+   late LoginBloc loginBloc;
+
+   @override
+  void initState() {
+     super.initState();
+     loginBloc = LoginBloc();
+   }
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -46,7 +53,7 @@ class LoginState extends State<LoginScreen> {
                 padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                 child: CustomTextField(
                   hintText: 'Enter your email',
-                  controller: controller,
+                  controller: loginBloc.emailController,
                   labelText: 'Email',
                 ),
               ),
@@ -59,7 +66,7 @@ class LoginState extends State<LoginScreen> {
                   child: CustomOutlinePassField(
                       labelText: 'Password',
                       hintText: 'Enter your password',
-                      controller: passwordController)),
+                      controller: loginBloc.passwordController)),
             ),
             SizedBox(
               width: screenWidth * 0.6,
@@ -71,10 +78,15 @@ class LoginState extends State<LoginScreen> {
                       textColor: Colors.black,
                       backgroundColor: Colors.blue,
                       onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => UserMainView()));
+                         if (loginBloc.emailController.text.isEmpty ||     loginBloc.passwordController.text.isEmpty) {
+                          // Show error message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Please enter email and password')),
+                          );
+                          return;
+                        }
+
+                         loginBloc.login(context);
                       })),
             ),
             GestureDetector(

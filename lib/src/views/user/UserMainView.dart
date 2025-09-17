@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../LoginScreen.dart';
 import '../../widget/modern_navigation_bar.dart';
 
 class UserMainView extends StatefulWidget {
@@ -62,6 +64,19 @@ class _UserMainViewState extends State<UserMainView> {
       appBar: AppBar(
         title: const Text('DPR Car Rentals'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       body: _screens[_currentIndex],
       bottomNavigationBar: ModernNavigationBar(

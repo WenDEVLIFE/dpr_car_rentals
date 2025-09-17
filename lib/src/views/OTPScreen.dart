@@ -26,6 +26,7 @@ class OTPScreen extends StatelessWidget {
       create: (context) => OtpBloc(
         email: email,
         verificationId: verificationId,
+        userData: userData,
       ),
       child: OTPScreenView(userData: userData),
     );

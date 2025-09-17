@@ -32,9 +32,10 @@ class RegisterRepositoryImpl extends RegisterRepository {
 
       // Save additional user data to Firestore
       await _firestore.collection('users').doc(userCredential.user?.uid).set({
-        'uid': userCredential.user?.uid,
-        'email': email,
-        'fullName': fullName,
+        'UserID': userCredential.user?.uid,
+        'Email': email,
+        'FullName': fullName,
+        'Role': 'user',
         'createdAt': FieldValue.serverTimestamp(),
       });
 

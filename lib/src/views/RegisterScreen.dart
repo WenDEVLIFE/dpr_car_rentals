@@ -185,66 +185,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   weight: FontWeight.w400,
                 ),
               ),
-              SizedBox(height: screenHeight * 0.02),
-              CustomText(
-                text: 'OR',
-                size: 18,
-                color: ThemeHelper.secondaryColor,
-                fontFamily: 'Inter',
-                weight: FontWeight.w400,
-              ),
-              Divider(
-                color: ThemeHelper.secondaryColor,
-                height: screenHeight * 0.05,
-                thickness: 1,
-                indent: screenWidth * 0.1,
-                endIndent: screenWidth * 0.1,
-              ),
-              SizedBox(height: screenHeight * 0.01),
-              CustomText(
-                text: 'Sign Up Via',
-                size: 18,
-                color: ThemeHelper.secondaryColor,
-                fontFamily: 'Inter',
-                weight: FontWeight.w400,
-              ),
-              SizedBox(height: screenHeight * 0.01),
-              Row(
-                children: [
-                  const Spacer(),
-                  SizedBox(
-                    width: screenWidth * 0.4,
-                    height: screenWidth * 0.18,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 16, horizontal: 16),
-                      child: CustomButton(
-                        text: 'Google',
-                        textColor: Colors.black,
-                        backgroundColor: ThemeHelper.primaryColor,
-                        icon: FontAwesomeIcons.google,
-                        onPressed: () {},
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: screenWidth * 0.4,
-                    height: screenWidth * 0.18,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 16, horizontal: 16),
-                      child: CustomButton(
-                        text: 'Facebook',
-                        textColor: Colors.black,
-                        backgroundColor: ThemeHelper.primaryColor,
-                        icon: FontAwesomeIcons.facebook,
-                        onPressed: () {},
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                ],
-              ),
             ],
           ),
         ),

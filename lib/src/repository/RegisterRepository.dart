@@ -10,6 +10,11 @@ abstract class RegisterRepository {
   });
 
   Future<String> generateOTP();
+
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 }
 
 class RegisterRepositoryImpl extends RegisterRepository {
@@ -52,5 +57,32 @@ class RegisterRepositoryImpl extends RegisterRepository {
     final random = Random();
     final otp = (100000 + random.nextInt(900000)).toString();
     return otp;
+  }
+
+  @override
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null || user.email == null) {
+        return false;
+      }
+
+      // Reauthenticate with current password
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
+
+      // Update password
+      await user.updatePassword(newPassword);
+      return true;
+    } catch (e) {
+      print('Change password error: $e');
+      return false;
+    }
   }
 }

@@ -1,6 +1,9 @@
+import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
+import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/material.dart';
 import '../helpers/SessionHelpers.dart';
 import 'LoginScreen.dart';
+import 'ChangePasswordView.dart';
 
 class MenuView extends StatefulWidget {
   const MenuView({super.key});
@@ -29,11 +32,12 @@ class _MenuViewState extends State<MenuView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ThemeHelper.primaryColor,
       appBar: AppBar(
-        title: const Text('Menu'),
+        title: CustomText(text: 'Menu', size: 20, color: Colors.black, fontFamily: 'Inter', weight: FontWeight.w700),
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: ThemeHelper.primaryColor,
+        foregroundColor: ThemeHelper.primaryColor,
       ),
       body: _userInfo == null
           ? const Center(child: CircularProgressIndicator())
@@ -110,8 +114,12 @@ class _MenuViewState extends State<MenuView> {
                           icon: Icons.lock,
                           title: 'Change Password',
                           onTap: () {
-                            // Navigate to change password screen or show dialog
-                            _showChangePasswordDialog();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ChangePasswordView()),
+                            );
                           },
                         ),
                         _buildMenuItem(
@@ -174,22 +182,6 @@ class _MenuViewState extends State<MenuView> {
       onTap: onTap,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
-      ),
-    );
-  }
-
-  void _showChangePasswordDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Change Password'),
-        content: const Text('Feature coming soon!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
       ),
     );
   }

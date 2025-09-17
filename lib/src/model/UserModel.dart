@@ -9,7 +9,7 @@ class UserModel{
 
   factory UserModel.FromDocumentSnapshot(DocumentSnapshot doc){
     return UserModel(
-      uid: doc['Uid'],
+      uid: doc.id,
       email: doc['Email'],
       fullName: doc['FullName'],
       role: doc['Role'],

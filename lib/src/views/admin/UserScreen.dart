@@ -1,3 +1,4 @@
+import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/UserBloc.dart';
@@ -207,7 +208,8 @@ class _UserScreenState extends State<UserScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Users'),
+          title: CustomText(text: 'Users', size: 20, color: Colors.white, fontFamily: 'Inter', weight: FontWeight.w700),
+          backgroundColor: ThemeHelper.primaryColor,
           actions: [
             IconButton(
               icon: const Icon(Icons.add),

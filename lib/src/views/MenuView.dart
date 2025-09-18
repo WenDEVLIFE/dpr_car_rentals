@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import '../helpers/SessionHelpers.dart';
 import 'LoginScreen.dart';
 import 'ChangePasswordView.dart';
+import 'EditProfileScreen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/ProfileBloc.dart';
+import '../repository/RegisterRepository.dart';
 
 class MenuView extends StatefulWidget {
   const MenuView({super.key});
@@ -34,10 +38,14 @@ class _MenuViewState extends State<MenuView> {
     return Scaffold(
       backgroundColor: ThemeHelper.primaryColor,
       appBar: AppBar(
-        title: CustomText(text: 'Menu', size: 20, color: Colors.black, fontFamily: 'Inter', weight: FontWeight.w700),
+        title: CustomText(
+            text: 'Menu',
+            size: 20,
+            color: Colors.white,
+            fontFamily: 'Inter',
+            weight: FontWeight.w700),
         elevation: 0,
-        backgroundColor: ThemeHelper.primaryColor,
-        foregroundColor: ThemeHelper.primaryColor,
+        backgroundColor: Colors.blue  ,
       ),
       body: _userInfo == null
           ? const Center(child: CircularProgressIndicator())
@@ -119,6 +127,22 @@ class _MenuViewState extends State<MenuView> {
                               MaterialPageRoute(
                                   builder: (context) =>
                                       const ChangePasswordView()),
+                            );
+                          },
+                        ),
+                        _buildMenuItem(
+                          icon: Icons.edit,
+                          title: 'Edit Profile',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BlocProvider(
+                                  create: (context) =>
+                                      ProfileBloc(RegisterRepositoryImpl()),
+                                  child: const EditProfileScreen(),
+                                ),
+                              ),
                             );
                           },
                         ),

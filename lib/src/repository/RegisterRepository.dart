@@ -16,6 +16,10 @@ abstract class RegisterRepository {
 
   Future<void> updateOwnerDetails(String uid, Map<String, dynamic> details);
 
+  Future<void> updateUserDetails(String uid, Map<String, dynamic> details);
+
+  Future<Map<String, dynamic>?> getUserData(String uid);
+
   Future<bool> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -112,6 +116,32 @@ class RegisterRepositoryImpl extends RegisterRepository {
     } catch (e) {
       print('Error updating owner details: $e');
       throw e;
+    }
+  }
+
+  @override
+  Future<void> updateUserDetails(
+      String uid, Map<String, dynamic> details) async {
+    try {
+      await _firestore.collection('users').doc(uid).update(details);
+    } catch (e) {
+      print('Error updating user details: $e');
+      throw e;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getUserData(String uid) async {
+    try {
+      DocumentSnapshot doc =
+          await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return doc.data() as Map<String, dynamic>?;
+      }
+      return null;
+    } catch (e) {
+      print('Error getting user data: $e');
+      return null;
     }
   }
 

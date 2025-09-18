@@ -3,6 +3,9 @@ class UserModel {
   final String email;
   final String fullName;
   final String role;
+  final String? phoneNumber;
+  final String? driverLicenseNumber;
+  final String? paymentPreference;
   final DateTime? createdAt;
 
   UserModel({
@@ -10,6 +13,9 @@ class UserModel {
     required this.email,
     required this.fullName,
     required this.role,
+    this.phoneNumber,
+    this.driverLicenseNumber,
+    this.paymentPreference,
     this.createdAt,
   });
 
@@ -19,6 +25,9 @@ class UserModel {
       email: map['Email'] ?? '',
       fullName: map['FullName'] ?? '',
       role: map['Role'] ?? 'user',
+      phoneNumber: map['PhoneNumber']?.toString(),
+      driverLicenseNumber: map['DriverLicenseNumber']?.toString(),
+      paymentPreference: map['PaymentPreference']?.toString(),
       createdAt: map['createdAt'] != null
           ? (map['createdAt'] as dynamic).toDate()
           : null,
@@ -31,6 +40,9 @@ class UserModel {
       'Email': email,
       'FullName': fullName,
       'Role': role,
+      'PhoneNumber': phoneNumber,
+      'DriverLicenseNumber': driverLicenseNumber,
+      'PaymentPreference': paymentPreference,
       'createdAt': createdAt ?? DateTime.now(),
     };
   }
@@ -40,6 +52,9 @@ class UserModel {
     String? email,
     String? fullName,
     String? role,
+    String? phoneNumber,
+    String? driverLicenseNumber,
+    String? paymentPreference,
     DateTime? createdAt,
   }) {
     return UserModel(
@@ -47,6 +62,9 @@ class UserModel {
       email: email ?? this.email,
       fullName: fullName ?? this.fullName,
       role: role ?? this.role,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      driverLicenseNumber: driverLicenseNumber ?? this.driverLicenseNumber,
+      paymentPreference: paymentPreference ?? this.paymentPreference,
       createdAt: createdAt ?? this.createdAt,
     );
   }

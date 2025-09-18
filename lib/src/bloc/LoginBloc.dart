@@ -1,5 +1,7 @@
 import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
 import 'package:dpr_car_rentals/src/repository/LoginRepository.dart';
+import 'package:dpr_car_rentals/src/repository/RegisterRepository.dart';
+import 'package:dpr_car_rentals/src/views/user/UserDetailsScreen.dart';
 import 'package:dpr_car_rentals/src/views/user/UserMainView.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
@@ -21,13 +23,13 @@ abstract class LoginState extends Equatable {
 
 class LoginInitial extends LoginState {}
 
-
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   LoginBloc() : super(LoginInitial());
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final LoginRepositoryImpl loginRepository = LoginRepositoryImpl();
+  final RegisterRepositoryImpl registerRepository = RegisterRepositoryImpl();
   final SessionHelpers sessionHelpers = SessionHelpers();
 
   void login(BuildContext context) async {
@@ -60,8 +62,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => AdminDashboardView()));
         } else if (role.toLowerCase() == 'user') {
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => UserMainView()));
+          // Check if user has details
+          bool hasDetails = await registerRepository.isUserHasDetails(uid);
+          if (hasDetails) {
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => const UserMainView()));
+          } else {
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const UserDetailsScreen()));
+          }
         } else if (role.toLowerCase() == 'owner') {
           Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => OwnerView()));
@@ -73,8 +84,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         print('Login failed');
         Fluttertoast.showToast(msg: 'Login failed: Invalid credentials');
       }
-    }
-    catch (e) {
+    } catch (e) {
       print('Login error: $e');
       Fluttertoast.showToast(msg: 'Login error: $e');
     }

@@ -5,6 +5,7 @@ abstract class UserRepository {
   Stream<List<UserModel>> getUsers();
   Future<void> addUser(UserModel user);
   Future<void> updateUser(String uid, UserModel user);
+  Future<void> updateUserDetails(String uid, Map<String, dynamic> details);
   Future<void> deleteUser(String uid);
 }
 
@@ -26,6 +27,12 @@ class UserRepositoryImpl extends UserRepository {
   @override
   Future<void> updateUser(String uid, UserModel user) async {
     await _firestore.collection('users').doc(uid).update(user.toMap());
+  }
+
+  @override
+  Future<void> updateUserDetails(
+      String uid, Map<String, dynamic> details) async {
+    await _firestore.collection('users').doc(uid).update(details);
   }
 
   @override

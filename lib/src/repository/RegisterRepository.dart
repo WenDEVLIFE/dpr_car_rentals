@@ -10,6 +10,13 @@ abstract class RegisterRepository {
     String role = 'user',
   });
 
+  Future<bool> registerUserWithGoogle({
+    required String uid,
+    required String email,
+    required String fullName,
+    String role = 'user',
+  });
+
   Future<String> generateOTP();
 
   Future<bool> isUserHasDetails(String uid);
@@ -57,6 +64,36 @@ class RegisterRepositoryImpl extends RegisterRepository {
       return true;
     } catch (e) {
       print('Registration error: $e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> registerUserWithGoogle({
+    required String uid,
+    required String email,
+    required String fullName,
+    String role = 'user',
+  }) async {
+    try {
+      // Check if user already exists
+      final docSnapshot = await _firestore.collection('users').doc(uid).get();
+
+      if (!docSnapshot.exists) {
+        // Save user data to Firestore
+        await _firestore.collection('users').doc(uid).set({
+          'UserID': uid,
+          'Email': email,
+          'FullName': fullName,
+          'Role': role,
+          'Provider': 'google',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      return true;
+    } catch (e) {
+      print('Google registration error: $e');
       return false;
     }
   }

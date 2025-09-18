@@ -18,14 +18,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class LoginState extends State<LoginScreen> {
+  late LoginBloc loginBloc;
 
-   late LoginBloc loginBloc;
-
-   @override
+  @override
   void initState() {
-     super.initState();
-     loginBloc = LoginBloc();
-   }
+    super.initState();
+    loginBloc = LoginBloc();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,15 +77,18 @@ class LoginState extends State<LoginScreen> {
                       textColor: Colors.black,
                       backgroundColor: Colors.blue,
                       onPressed: () {
-                         if (loginBloc.emailController.text.isEmpty ||     loginBloc.passwordController.text.isEmpty) {
+                        if (loginBloc.emailController.text.isEmpty ||
+                            loginBloc.passwordController.text.isEmpty) {
                           // Show error message
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Please enter email and password')),
+                            SnackBar(
+                                content:
+                                    Text('Please enter email and password')),
                           );
                           return;
                         }
 
-                         loginBloc.login(context);
+                        loginBloc.login(context);
                       })),
             ),
             GestureDetector(
@@ -127,7 +129,9 @@ class LoginState extends State<LoginScreen> {
                           textColor: Colors.black,
                           backgroundColor: ThemeHelper.primaryColor,
                           icon: FontAwesomeIcons.google,
-                          onPressed: () {})),
+                          onPressed: () {
+                            loginBloc.loginWithGoogle(context);
+                          })),
                 ),
                 Spacer(),
               ],

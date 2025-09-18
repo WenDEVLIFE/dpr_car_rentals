@@ -1,6 +1,7 @@
 import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
 import 'package:dpr_car_rentals/src/repository/LoginRepository.dart';
 import 'package:dpr_car_rentals/src/repository/RegisterRepository.dart';
+import 'package:dpr_car_rentals/src/services/auth/GoogleAuth.dart';
 import 'package:dpr_car_rentals/src/views/user/UserDetailsScreen.dart';
 import 'package:dpr_car_rentals/src/views/user/UserMainView.dart';
 import 'package:equatable/equatable.dart';
@@ -97,6 +98,73 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     } catch (e) {
       print('Login error: $e');
       Fluttertoast.showToast(msg: 'Login error: $e');
+    }
+  }
+
+  void loginWithGoogle(BuildContext context) async {
+    try {
+      final userCredential = await GoogleSignInService.signInWithGoogle();
+
+      if (userCredential != null && userCredential.user != null) {
+        final user = userCredential.user!;
+
+        // Get user data from Firestore
+        final userData = await registerRepository.getUserData(user.uid);
+
+        if (userData != null) {
+          // Login successful, save session
+          String email = userData['Email']?.toString() ?? user.email ?? '';
+          String role = userData['Role']?.toString() ?? 'user';
+          String fullName =
+              userData['FullName']?.toString() ?? user.displayName ?? '';
+          String uid = user.uid;
+
+          // save the session
+          sessionHelpers.saveUserInfo(
+              {'email': email, 'role': role, 'fullName': fullName, 'uid': uid});
+
+          // navigate to next page
+          if (role.toLowerCase() == 'admin') {
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => AdminDashboardView()));
+          } else if (role.toLowerCase() == 'user') {
+            // Check if user has details
+            bool hasDetails = await registerRepository.isUserHasDetails(uid);
+            if (hasDetails) {
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const UserMainView()));
+            } else {
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const UserDetailsScreen()));
+            }
+          } else if (role.toLowerCase() == 'owner') {
+            // Check if owner has details
+            bool hasDetails = await registerRepository.isUserHasDetails(uid);
+            if (hasDetails) {
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => OwnerView()));
+            } else {
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const OwnerDetailsScreen()));
+            }
+          } else {
+            Fluttertoast.showToast(msg: 'Unknown role: $role');
+          }
+        } else {
+          Fluttertoast.showToast(msg: 'Failed to get user data');
+        }
+      } else {
+        Fluttertoast.showToast(msg: 'Google sign-in failed');
+      }
+    } catch (e) {
+      print('Google login error: $e');
+      Fluttertoast.showToast(msg: 'Google login error: $e');
     }
   }
 }

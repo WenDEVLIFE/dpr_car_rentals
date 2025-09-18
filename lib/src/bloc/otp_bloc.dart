@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'otp_event.dart';
 import 'otp_state.dart';
 import '../services/GmailService.dart';
 import '../repository/RegisterRepository.dart';
+import '../helpers/SessionHelpers.dart';
 
 class OtpBloc extends Bloc<OtpEvent, OtpState> {
   Timer? _resendTimer;
   final String email;
   final String? verificationId;
   final RegisterRepository _registerRepository;
+  final SessionHelpers _sessionHelpers;
   String _generatedOTP = '';
   Map<String, dynamic>? _userData;
 
@@ -17,8 +20,10 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
     required this.email,
     this.verificationId,
     RegisterRepository? registerRepository,
+    SessionHelpers? sessionHelpers,
     Map<String, dynamic>? userData,
   })  : _registerRepository = registerRepository ?? RegisterRepositoryImpl(),
+        _sessionHelpers = sessionHelpers ?? SessionHelpers(),
         _userData = userData,
         super(const OtpState()) {
     // Register event handlers
@@ -154,6 +159,23 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
         }
 
         if (isRegistered) {
+          // Get the current user from Firebase Auth
+          final currentUser = FirebaseAuth.instance.currentUser;
+          if (currentUser != null) {
+            // Get user data from Firestore
+            final userData =
+                await _registerRepository.getUserData(currentUser.uid);
+            if (userData != null) {
+              // Store user data in session
+              await _sessionHelpers.saveUserInfo({
+                'email': userData['Email'] ?? currentUser.email ?? '',
+                'uid': currentUser.uid,
+                'role': userData['Role'] ?? 'user',
+                'fullName': userData['FullName'] ?? 'User',
+              });
+            }
+          }
+
           emit(state.copyWith(
             status: OtpStatus.success,
             isComplete: true,

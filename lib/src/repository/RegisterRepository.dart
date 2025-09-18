@@ -12,6 +12,8 @@ abstract class RegisterRepository {
 
   Future<String> generateOTP();
 
+  Future<bool> isUserHasDetails(String uid);
+
   Future<bool> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -50,6 +52,34 @@ class RegisterRepositoryImpl extends RegisterRepository {
     } catch (e) {
       print('Registration error: $e');
       return false;
+    }
+  }
+
+  @override
+  Future<bool> isUserHasDetails(String uid) async {
+    try {
+    DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
+
+    // Check if document exists
+    if (!doc.exists) {
+      return false;
+    }
+
+    String? phoneNumber = doc['PhoneNumber']?.toString();
+    String? driverLicenseNumber = doc['DriverLicenseNumber']?.toString();
+    String? paymentPreference = doc['PaymentPreference']?.toString();
+
+    // Check if all required fields are present and not empty
+    if (phoneNumber != null && phoneNumber.isNotEmpty &&
+        driverLicenseNumber != null && driverLicenseNumber.isNotEmpty &&
+        paymentPreference != null && paymentPreference.isNotEmpty) {
+      return true;
+    } else {
+      return false;
+    }
+    } catch (e) {
+    print('Error checking user details: $e');
+    return false;
     }
   }
 

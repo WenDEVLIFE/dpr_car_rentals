@@ -5,6 +5,8 @@ import '../helpers/SessionHelpers.dart';
 import 'LoginScreen.dart';
 import 'ChangePasswordView.dart';
 import 'EditProfileScreen.dart';
+import 'PrivacyPolicyScreen.dart';
+import 'AboutUsScreen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/ProfileBloc.dart';
 import '../repository/RegisterRepository.dart';
@@ -45,7 +47,7 @@ class _MenuViewState extends State<MenuView> {
             fontFamily: 'Inter',
             weight: FontWeight.w700),
         elevation: 0,
-        backgroundColor: Colors.blue  ,
+        backgroundColor: Colors.blue,
       ),
       body: _userInfo == null
           ? const Center(child: CircularProgressIndicator())
@@ -155,7 +157,7 @@ class _MenuViewState extends State<MenuView> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
-                                      const PrivacyPolicyView()),
+                                      const PrivacyPolicyScreen()),
                             );
                           },
                         ),
@@ -167,7 +169,7 @@ class _MenuViewState extends State<MenuView> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const AboutUsView()),
+                                  builder: (context) => const AboutUsScreen()),
                             );
                           },
                         ),
@@ -207,31 +209,6 @@ class _MenuViewState extends State<MenuView> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
-    );
-  }
-}
-
-// Placeholder screens for Privacy Policy and About Us
-class PrivacyPolicyView extends StatelessWidget {
-  const PrivacyPolicyView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Privacy Policy')),
-      body: const Center(child: Text('Privacy Policy content here.')),
-    );
-  }
-}
-
-class AboutUsView extends StatelessWidget {
-  const AboutUsView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('About Us')),
-      body: const Center(child: Text('About Us content here.')),
     );
   }
 }

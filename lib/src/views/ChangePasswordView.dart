@@ -104,7 +104,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
 
     return Scaffold(
       appBar:AppBar(
-        title: CustomText(text: 'Change Password', size: 20, color: Colors.black, fontFamily: 'Inter', weight: FontWeight.w700),
+        title: CustomText(text: 'Change Password', size: 20, color: Colors.white, fontFamily: 'Inter', weight: FontWeight.w700),
         elevation: 0,
         backgroundColor: Colors.blue,
         foregroundColor: Colors.blue,

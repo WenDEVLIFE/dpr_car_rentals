@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../views/admin/AdminView.dart';
+import '../views/owner/OwnerDetailsScreen.dart';
 import '../views/owner/OwnerView.dart';
 
 abstract class LoginEvent extends Equatable {
@@ -74,8 +75,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
                     builder: (context) => const UserDetailsScreen()));
           }
         } else if (role.toLowerCase() == 'owner') {
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => OwnerView()));
+          // Check if owner has details
+          bool hasDetails = await registerRepository.isUserHasDetails(uid);
+          if (hasDetails) {
+            Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (context) => OwnerView()));
+          } else {
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const OwnerDetailsScreen()));
+          }
         } else {
           Fluttertoast.showToast(msg: 'Unknown role: $role');
         }

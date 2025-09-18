@@ -6,6 +6,9 @@ class UserModel {
   final String? phoneNumber;
   final String? driverLicenseNumber;
   final String? paymentPreference;
+  final String? address;
+  final String? bankName;
+  final String? bankAccountNumber;
   final DateTime? createdAt;
 
   UserModel({
@@ -16,6 +19,9 @@ class UserModel {
     this.phoneNumber,
     this.driverLicenseNumber,
     this.paymentPreference,
+    this.address,
+    this.bankName,
+    this.bankAccountNumber,
     this.createdAt,
   });
 
@@ -28,6 +34,9 @@ class UserModel {
       phoneNumber: map['PhoneNumber']?.toString(),
       driverLicenseNumber: map['DriverLicenseNumber']?.toString(),
       paymentPreference: map['PaymentPreference']?.toString(),
+      address: map['Address']?.toString(),
+      bankName: map['BankName']?.toString(),
+      bankAccountNumber: map['BankAccountNumber']?.toString(),
       createdAt: map['createdAt'] != null
           ? (map['createdAt'] as dynamic).toDate()
           : null,
@@ -43,6 +52,9 @@ class UserModel {
       'PhoneNumber': phoneNumber,
       'DriverLicenseNumber': driverLicenseNumber,
       'PaymentPreference': paymentPreference,
+      'Address': address,
+      'BankName': bankName,
+      'BankAccountNumber': bankAccountNumber,
       'createdAt': createdAt ?? DateTime.now(),
     };
   }
@@ -55,6 +67,9 @@ class UserModel {
     String? phoneNumber,
     String? driverLicenseNumber,
     String? paymentPreference,
+    String? address,
+    String? bankName,
+    String? bankAccountNumber,
     DateTime? createdAt,
   }) {
     return UserModel(
@@ -65,6 +80,9 @@ class UserModel {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       driverLicenseNumber: driverLicenseNumber ?? this.driverLicenseNumber,
       paymentPreference: paymentPreference ?? this.paymentPreference,
+      address: address ?? this.address,
+      bankName: bankName ?? this.bankName,
+      bankAccountNumber: bankAccountNumber ?? this.bankAccountNumber,
       createdAt: createdAt ?? this.createdAt,
     );
   }

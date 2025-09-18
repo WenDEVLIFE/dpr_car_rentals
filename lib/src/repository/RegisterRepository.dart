@@ -14,6 +14,8 @@ abstract class RegisterRepository {
 
   Future<bool> isUserHasDetails(String uid);
 
+  Future<void> updateOwnerDetails(String uid, Map<String, dynamic> details);
+
   Future<bool> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -58,28 +60,58 @@ class RegisterRepositoryImpl extends RegisterRepository {
   @override
   Future<bool> isUserHasDetails(String uid) async {
     try {
-    DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
+      DocumentSnapshot doc =
+          await _firestore.collection('users').doc(uid).get();
 
-    // Check if document exists
-    if (!doc.exists) {
-      return false;
-    }
+      // Check if document exists
+      if (!doc.exists) {
+        return false;
+      }
 
-    String? phoneNumber = doc['PhoneNumber']?.toString();
-    String? driverLicenseNumber = doc['DriverLicenseNumber']?.toString();
-    String? paymentPreference = doc['PaymentPreference']?.toString();
+      String? role = doc['Role']?.toString();
+      String? phoneNumber = doc['PhoneNumber']?.toString();
 
-    // Check if all required fields are present and not empty
-    if (phoneNumber != null && phoneNumber.isNotEmpty &&
-        driverLicenseNumber != null && driverLicenseNumber.isNotEmpty &&
-        paymentPreference != null && paymentPreference.isNotEmpty) {
-      return true;
-    } else {
-      return false;
-    }
+      if (phoneNumber == null || phoneNumber.isEmpty) {
+        return false;
+      }
+
+      if (role == 'user') {
+        String? driverLicenseNumber = doc['DriverLicenseNumber']?.toString();
+        String? paymentPreference = doc['PaymentPreference']?.toString();
+
+        return driverLicenseNumber != null &&
+            driverLicenseNumber.isNotEmpty &&
+            paymentPreference != null &&
+            paymentPreference.isNotEmpty;
+      } else if (role == 'owner') {
+        String? address = doc['Address']?.toString();
+        String? bankName = doc['BankName']?.toString();
+        String? bankAccountNumber = doc['BankAccountNumber']?.toString();
+
+        return address != null &&
+            address.isNotEmpty &&
+            bankName != null &&
+            bankName.isNotEmpty &&
+            bankAccountNumber != null &&
+            bankAccountNumber.isNotEmpty;
+      } else {
+        // For admin or other roles, no additional details required
+        return true;
+      }
     } catch (e) {
-    print('Error checking user details: $e');
-    return false;
+      print('Error checking user details: $e');
+      return false;
+    }
+  }
+
+  @override
+  Future<void> updateOwnerDetails(
+      String uid, Map<String, dynamic> details) async {
+    try {
+      await _firestore.collection('users').doc(uid).update(details);
+    } catch (e) {
+      print('Error updating owner details: $e');
+      throw e;
     }
   }
 

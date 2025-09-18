@@ -57,10 +57,6 @@ class _OwnerViewState extends State<OwnerView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('DPR Car Rentals'),
-        elevation: 0,
-      ),
       body: _screens[_currentIndex],
       bottomNavigationBar: ModernNavigationBar(
         currentIndex: _currentIndex,

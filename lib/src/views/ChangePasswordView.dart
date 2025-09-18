@@ -106,8 +106,8 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
       appBar:AppBar(
         title: CustomText(text: 'Change Password', size: 20, color: Colors.black, fontFamily: 'Inter', weight: FontWeight.w700),
         elevation: 0,
-        backgroundColor: ThemeHelper.primaryColor,
-        foregroundColor: ThemeHelper.primaryColor,
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.blue,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),

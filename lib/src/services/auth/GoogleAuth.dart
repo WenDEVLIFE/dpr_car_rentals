@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../repository/RegisterRepository.dart';
 
@@ -10,11 +11,11 @@ class GoogleSignInService {
   static final RegisterRepository _registerRepository =
       RegisterRepositoryImpl();
   static bool isInitialize = false;
+
   static Future<void> initSignIn() async {
     if (!isInitialize) {
       await _googleSignIn.initialize(
-        serverClientId:
-            '484988555302-d91nev5jn5sit0qoe3oehpgpp58pl5mt.apps.googleusercontent.com',
+        serverClientId: dotenv.env['GOOGLE_SERVER_CLIENT_ID'],
       );
     }
     isInitialize = true;
@@ -23,7 +24,7 @@ class GoogleSignInService {
   // Sign in with Google
   static Future<UserCredential?> signInWithGoogle() async {
     try {
-      initSignIn();
+      await initSignIn();
       final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
       final idToken = googleUser.authentication.idToken;
       final authorizationClient = googleUser.authorizationClient;

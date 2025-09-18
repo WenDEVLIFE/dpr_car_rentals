@@ -33,7 +33,7 @@ migrate_working_dir/
 /build/
 /coverage/
 Dockerfile
-env
+.env
 app-release.apk
 .android/.app/google-services.json
 .ios/.Runner/GoogleService-Info.plist

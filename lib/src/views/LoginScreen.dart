@@ -129,19 +129,6 @@ class LoginState extends State<LoginScreen> {
                           icon: FontAwesomeIcons.google,
                           onPressed: () {})),
                 ),
-                SizedBox(
-                  width: screenWidth * 0.4,
-                  height: screenWidth * 0.18,
-                  child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                      child: CustomButton(
-                          text: 'Facebook',
-                          textColor: Colors.black,
-                          backgroundColor: ThemeHelper.primaryColor,
-                          icon: FontAwesomeIcons.facebook,
-                          onPressed: () {})),
-                ),
                 Spacer(),
               ],
             ),

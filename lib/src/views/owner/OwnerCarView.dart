@@ -440,53 +440,54 @@ class _OwnerCarViewState extends State<OwnerCarView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Photo Upload
-                  GestureDetector(
-                    onTap: selectedPhoto != null || car?.photoUrl != null
-                        ? () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ImageZoomView(
-                                  imageUrl: car?.photoUrl,
-                                  imageFile: selectedPhoto,
-                                  heroTag: 'dialog-${car?.id ?? 'new'}',
-                                ),
-                              ),
-                            )
-                        : () async {
-                            final picker = ImagePicker();
-                            final pickedFile = await picker.pickImage(
-                                source: ImageSource.gallery);
-                            if (pickedFile != null) {
-                              setState(
-                                  () => selectedPhoto = File(pickedFile.path));
-                            }
-                          },
-                    child: Hero(
-                      tag: 'dialog-${car?.id ?? 'new'}',
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: ThemeHelper.secondaryColor,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: ThemeHelper.borderColor),
-                        ),
-                        child: selectedPhoto != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.file(selectedPhoto!,
-                                    fit: BoxFit.cover),
-                              )
-                            : car?.photoUrl != null
+                  Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () => _showPhotoOptions(car, selectedPhoto,
+                            (File? newPhoto) {
+                          setState(() => selectedPhoto = newPhoto);
+                        }),
+                        child: Hero(
+                          tag: 'dialog-${car?.id ?? 'new'}',
+                          child: Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: ThemeHelper.secondaryColor,
+                              borderRadius: BorderRadius.circular(8),
+                              border:
+                                  Border.all(color: ThemeHelper.borderColor),
+                            ),
+                            child: selectedPhoto != null
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(car!.photoUrl!,
+                                    child: Image.file(selectedPhoto!,
                                         fit: BoxFit.cover),
                                   )
-                                : const Icon(Icons.add_a_photo,
-                                    size: 40, color: Colors.grey),
+                                : car?.photoUrl != null
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(car!.photoUrl!,
+                                            fit: BoxFit.cover),
+                                      )
+                                    : const Icon(Icons.add_a_photo,
+                                        size: 40, color: Colors.grey),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      CustomText(
+                        text: selectedPhoto != null
+                            ? 'New photo selected - tap to change'
+                            : car?.photoUrl != null
+                                ? 'Tap to view or change photo'
+                                : 'Tap to add photo',
+                        size: 12,
+                        color: ThemeHelper.textColor1,
+                        fontFamily: 'Inter',
+                        weight: FontWeight.w400,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
 
@@ -644,6 +645,65 @@ class _OwnerCarViewState extends State<OwnerCarView> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showPhotoOptions(
+      CarModel? car, File? selectedPhoto, Function(File?) onPhotoSelected) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (selectedPhoto != null || car?.photoUrl != null) ...[
+                ListTile(
+                  leading: const Icon(Icons.visibility),
+                  title: const Text('View Photo'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      this.context,
+                      MaterialPageRoute(
+                        builder: (context) => ImageZoomView(
+                          imageUrl: car?.photoUrl,
+                          imageFile: selectedPhoto,
+                          heroTag: 'dialog-${car?.id ?? 'new'}',
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final picker = ImagePicker();
+                  final pickedFile =
+                      await picker.pickImage(source: ImageSource.gallery);
+                  if (pickedFile != null) {
+                    onPhotoSelected(File(pickedFile.path));
+                  }
+                },
+              ),
+              if (selectedPhoto != null || car?.photoUrl != null) ...[
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text('Remove Photo',
+                      style: TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    onPhotoSelected(null);
+                  },
+                ),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 }

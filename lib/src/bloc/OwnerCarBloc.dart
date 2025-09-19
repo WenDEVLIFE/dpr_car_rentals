@@ -52,11 +52,23 @@ class OwnerCarBloc extends Bloc<OwnerCarEvent, OwnerCarState> {
 
   void _onUpdateCar(UpdateCar event, Emitter<OwnerCarState> emit) async {
     try {
-      // Upload new photo if provided
+      // Handle photo update if provided
       String? photoUrl = event.car.photoUrl;
       if (event.photo != null) {
-        photoUrl =
-            await carRepository.uploadCarPhoto(event.carId, event.photo!);
+        // Get the old photo URL before updating
+        String? oldPhotoUrl;
+        if (state is OwnerCarLoaded) {
+          final currentState = state as OwnerCarLoaded;
+          final existingCar = currentState.cars.firstWhere(
+            (car) => car.id == event.carId,
+            orElse: () => event.car,
+          );
+          oldPhotoUrl = existingCar.photoUrl;
+        }
+
+        // Update photo (upload new and delete old)
+        photoUrl = await carRepository.updateCarPhoto(
+            event.carId, event.photo!, oldPhotoUrl);
       }
 
       // Update car with new photo URL

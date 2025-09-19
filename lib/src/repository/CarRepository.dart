@@ -14,6 +14,8 @@ abstract class CarRepository {
   Future<void> approveCar(String carId);
   Future<void> rejectCar(String carId, String reason);
   Future<String?> uploadCarPhoto(String carId, File photo);
+  Future<String?> updateCarPhoto(
+      String carId, File newPhoto, String? oldPhotoUrl);
   Future<void> deleteCarPhoto(String photoUrl);
 }
 
@@ -114,6 +116,23 @@ class CarRepositoryImpl extends CarRepository {
       return downloadUrl;
     } catch (e) {
       print('Error uploading car photo: $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<String?> updateCarPhoto(
+      String carId, File newPhoto, String? oldPhotoUrl) async {
+    try {
+      // Delete old photo if it exists
+      if (oldPhotoUrl != null && oldPhotoUrl.isNotEmpty) {
+        await deleteCarPhoto(oldPhotoUrl);
+      }
+
+      // Upload new photo
+      return await uploadCarPhoto(carId, newPhoto);
+    } catch (e) {
+      print('Error updating car photo: $e');
       return null;
     }
   }

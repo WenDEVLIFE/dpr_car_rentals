@@ -36,19 +36,9 @@ class _OwnerViewState extends State<OwnerView> {
   ];
 
   void _onTabTapped(int index) {
-    if (index == 3) {
-      // Show chat as full-screen dialog without bottom navigation
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          fullscreenDialog: true,
-          builder: (context) => const ChatView(),
-        ),
-      );
-    } else {
       setState(() {
         _currentIndex = index;
       });
-    }
   }
 
   @override

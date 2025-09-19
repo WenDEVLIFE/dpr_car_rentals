@@ -9,7 +9,9 @@ import 'PrivacyPolicyScreen.dart';
 import 'AboutUsScreen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/ProfileBloc.dart';
+import '../bloc/FeedbackBloc.dart';
 import '../repository/RegisterRepository.dart';
+import 'user/UserFeedbackView.dart';
 
 class MenuView extends StatefulWidget {
   const MenuView({super.key});
@@ -173,6 +175,24 @@ class _MenuViewState extends State<MenuView> {
                             );
                           },
                         ),
+                        // Show feedback option only for non-admin users
+                        if (_userInfo?['role'] != 'admin') ...[
+                          _buildMenuItem(
+                            icon: Icons.feedback,
+                            title: 'Send Feedback',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BlocProvider(
+                                    create: (context) => FeedbackBloc(),
+                                    child: const UserFeedbackView(),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                         const Divider(),
                         _buildMenuItem(
                           icon: Icons.logout,

@@ -1,7 +1,10 @@
+import 'package:dpr_car_rentals/src/bloc/FeedbackBloc.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'AdminFeedbackView.dart';
 
 class AdminHomeView extends StatefulWidget {
   const AdminHomeView({super.key});
@@ -352,7 +355,15 @@ class _AdminHomeViewState extends State<AdminHomeView> {
                 subtitle: 'Read reviews',
                 color: Colors.purple,
                 onTap: () {
-                  // TODO: Navigate to feedback screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BlocProvider(
+                        create: (context) => FeedbackBloc(),
+                        child: const AdminFeedbackView(),
+                      ),
+                    ),
+                  );
                 },
               ),
             ),

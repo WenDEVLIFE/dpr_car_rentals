@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'otp_event.dart';
-import 'otp_state.dart';
+import 'event/otp_event.dart';
+import 'state/otp_state.dart';
 import '../services/GmailService.dart';
 import '../repository/RegisterRepository.dart';
 import '../helpers/SessionHelpers.dart';

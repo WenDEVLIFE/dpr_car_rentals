@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../repository/RegisterRepository.dart';
-import 'ProfileEvent.dart';
-import 'ProfileState.dart';
+import 'event/ProfileEvent.dart';
+import 'state/ProfileState.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final RegisterRepositoryImpl registerRepository;

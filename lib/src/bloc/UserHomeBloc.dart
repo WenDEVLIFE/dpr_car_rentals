@@ -2,8 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../helpers/SessionHelpers.dart';
 import '../models/UserModel.dart';
 import '../repository/UserRepository.dart';
-import 'UserHomeEvent.dart';
-import 'UserHomeState.dart';
+import 'event/UserHomeEvent.dart';
+import 'state/UserHomeState.dart';
 
 class UserHomeBloc extends Bloc<UserHomeEvent, UserHomeState> {
   final UserRepository userRepository;

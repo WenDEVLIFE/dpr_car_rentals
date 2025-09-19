@@ -1,6 +1,6 @@
 import 'package:dpr_car_rentals/src/bloc/ProfileBloc.dart';
-import 'package:dpr_car_rentals/src/bloc/ProfileEvent.dart';
-import 'package:dpr_car_rentals/src/bloc/ProfileState.dart';
+import 'package:dpr_car_rentals/src/bloc/event/ProfileEvent.dart';
+import 'package:dpr_car_rentals/src/bloc/state/ProfileState.dart';
 import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/repository/RegisterRepository.dart';

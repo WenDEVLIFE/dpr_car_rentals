@@ -31,6 +31,8 @@ abstract class RegisterRepository {
     required String currentPassword,
     required String newPassword,
   });
+
+  Future<bool> resetPassword(String email);
 }
 
 class RegisterRepositoryImpl extends RegisterRepository {
@@ -213,6 +215,17 @@ class RegisterRepositoryImpl extends RegisterRepository {
       return true;
     } catch (e) {
       print('Change password error: $e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return true;
+    } catch (e) {
+      print('Password reset error: $e');
       return false;
     }
   }

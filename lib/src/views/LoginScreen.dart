@@ -8,6 +8,7 @@ import 'package:dpr_car_rentals/src/widget/CustomTextField.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'ForgotPasswordView.dart';
 import 'RegisterScreen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -92,13 +93,20 @@ class LoginState extends State<LoginScreen> {
                       })),
             ),
             GestureDetector(
-              onDoubleTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ForgotPasswordView(),
+                  ),
+                );
+              },
               child: CustomText(
                   text: 'Forgot Password?',
                   size: 16,
-                  color: Colors.black,
+                  color: Colors.blue,
                   fontFamily: 'Inter',
-                  weight: FontWeight.w400),
+                  weight: FontWeight.w500),
             ),
             SizedBox(height: screenHeight * 0.02),
             CustomText(

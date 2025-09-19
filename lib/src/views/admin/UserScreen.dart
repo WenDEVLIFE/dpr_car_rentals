@@ -209,10 +209,10 @@ class _UserScreenState extends State<UserScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: CustomText(text: 'Users', size: 20, color: Colors.white, fontFamily: 'Inter', weight: FontWeight.w700),
-          backgroundColor: ThemeHelper.primaryColor,
+          backgroundColor: Colors.blue,
           actions: [
             IconButton(
-              icon: const Icon(Icons.add),
+              icon: const Icon(Icons.add, color: Colors.white,),
               onPressed: () => _showUserDialog(context),
             ),
           ],

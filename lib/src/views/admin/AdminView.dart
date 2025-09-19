@@ -1,4 +1,5 @@
 import 'package:dpr_car_rentals/src/views/MenuView.dart';
+import 'package:dpr_car_rentals/src/views/admin/AdminCarView.dart';
 import 'package:dpr_car_rentals/src/views/admin/AdminHomeView.dart';
 import 'package:dpr_car_rentals/src/views/admin/UserScreen.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,12 +20,7 @@ class _DashboardViewState extends State<AdminDashboardView> {
     // Home Screen
     const AdminHomeView(),
     // Cars Screen
-    const Center(
-      child: Text(
-        'Cars Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
+    const AdminCarView(),
 
     const UserScreen(),
 

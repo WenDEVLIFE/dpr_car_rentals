@@ -1,6 +1,6 @@
 import 'package:dpr_car_rentals/src/bloc/OwnerHomeBloc.dart';
-import 'package:dpr_car_rentals/src/bloc/OwnerHomeEvent.dart';
-import 'package:dpr_car_rentals/src/bloc/OwnerHomeState.dart';
+import 'package:dpr_car_rentals/src/bloc/event/OwnerHomeEvent.dart';
+import 'package:dpr_car_rentals/src/bloc/state/OwnerHomeState.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/material.dart';

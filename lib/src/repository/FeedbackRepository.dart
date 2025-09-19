@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../bloc/FeedbackState.dart';
+import '../bloc/state/FeedbackState.dart';
 
 abstract class FeedbackRepository {
   Stream<List<FeedbackItem>> getFeedbacks();

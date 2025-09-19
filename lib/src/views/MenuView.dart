@@ -8,7 +8,7 @@ import 'EditProfileScreen.dart';
 import 'PrivacyPolicyScreen.dart';
 import 'AboutUsScreen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/ProfileBloc.dart';
+import '../bloc/state/ProfileBloc.dart';
 import '../bloc/FeedbackBloc.dart';
 import '../repository/RegisterRepository.dart';
 import '../repository/FeedbackRepository.dart';

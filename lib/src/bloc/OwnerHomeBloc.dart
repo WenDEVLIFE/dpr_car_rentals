@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../helpers/SessionHelpers.dart';
-import 'OwnerHomeEvent.dart';
-import 'OwnerHomeState.dart';
+import 'event/OwnerHomeEvent.dart';
+import 'state/OwnerHomeState.dart';
 
 class OwnerHomeBloc extends Bloc<OwnerHomeEvent, OwnerHomeState> {
   final SessionHelpers sessionHelpers;

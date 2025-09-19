@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../repository/FeedbackRepository.dart';
-import 'FeedbackEvent.dart';
-import 'FeedbackState.dart';
+import 'event/FeedbackEvent.dart';
+import 'state/FeedbackState.dart';
 
 class FeedbackBloc extends Bloc<FeedbackEvent, FeedbackState> {
   final FeedbackRepository feedbackRepository;

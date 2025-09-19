@@ -1,9 +1,12 @@
+import 'package:dpr_car_rentals/src/bloc/CarBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/ChatBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/FeedbackBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/LoginBloc.dart';
+import 'package:dpr_car_rentals/src/bloc/OwnerCarBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/OwnerHomeBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/UserBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/UserHomeBloc.dart';
+import 'package:dpr_car_rentals/src/repository/CarRepository.dart';
 import 'package:dpr_car_rentals/src/repository/FeedbackRepository.dart';
 import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
 import 'package:dpr_car_rentals/src/repository/UserRepository.dart';
@@ -50,6 +53,12 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<OwnerHomeBloc>(
           create: (context) => OwnerHomeBloc(SessionHelpers()),
+        ),
+        BlocProvider<CarBloc>(
+          create: (context) => CarBloc(CarRepositoryImpl()),
+        ),
+        BlocProvider<OwnerCarBloc>(
+          create: (context) => OwnerCarBloc(CarRepositoryImpl()),
         ),
       ],
       child: MaterialApp(

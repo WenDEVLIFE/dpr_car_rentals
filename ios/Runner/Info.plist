@@ -46,6 +46,12 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 
+	<!-- Camera and Photo Library Permissions for image_picker -->
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to take photos for car listings</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access to select photos for car listings</string>
+
 	<!-- Google Sign-In Configuration -->
 	<key>GIDClientID</key>
 	<string>355447681591-gj55rumrl1jcvnjvb0cv0v2e1eiipqcm.apps.googleusercontent.com</string>

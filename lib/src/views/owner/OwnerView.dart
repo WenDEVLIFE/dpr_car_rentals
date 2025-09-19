@@ -1,4 +1,5 @@
 import 'package:dpr_car_rentals/src/views/MenuView.dart';
+import 'package:dpr_car_rentals/src/views/owner/OwnerCarView.dart';
 import 'package:dpr_car_rentals/src/views/user/ChatView.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -19,17 +20,12 @@ class _OwnerViewState extends State<OwnerView> {
   final List<Widget> _screens = [
     // Home Screen
     const OwnerHomeView(),
-    // Search Screen
+    // Cars Screen
+    const OwnerCarView(),
+    // Bookings Screen
     const Center(
       child: Text(
-        'Search Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
-    // Profile Screen
-    const Center(
-      child: Text(
-        'Profile Screen',
+        'Bookings Screen',
         style: TextStyle(fontSize: 24),
       ),
     ),

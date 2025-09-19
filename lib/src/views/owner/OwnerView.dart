@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../widget/modern_navigation_bar.dart';
+import 'OwnerHomeView.dart';
 
 class OwnerView extends StatefulWidget {
   const OwnerView({super.key});
@@ -17,12 +18,7 @@ class _OwnerViewState extends State<OwnerView> {
 
   final List<Widget> _screens = [
     // Home Screen
-    const Center(
-      child: Text(
-        'Home Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
+    const OwnerHomeView(),
     // Search Screen
     const Center(
       child: Text(

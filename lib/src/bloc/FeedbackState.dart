@@ -23,6 +23,34 @@ class FeedbackItem {
     this.isRead = false,
   });
 
+  factory FeedbackItem.fromMap(Map<String, dynamic> map) {
+    return FeedbackItem(
+      id: map['id'] ?? '',
+      userId: map['userId'] ?? '',
+      userName: map['userName'] ?? '',
+      userEmail: map['userEmail'] ?? '',
+      subject: map['subject'] ?? '',
+      message: map['message'] ?? '',
+      rating: map['rating'] ?? 0,
+      timestamp: (map['timestamp'] as dynamic)?.toDate() ?? DateTime.now(),
+      isRead: map['isRead'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'userId': userId,
+      'userName': userName,
+      'userEmail': userEmail,
+      'subject': subject,
+      'message': message,
+      'rating': rating,
+      'timestamp': timestamp,
+      'isRead': isRead,
+    };
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

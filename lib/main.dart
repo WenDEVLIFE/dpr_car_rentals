@@ -3,6 +3,7 @@ import 'package:dpr_car_rentals/src/bloc/FeedbackBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/LoginBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/UserBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/UserHomeBloc.dart';
+import 'package:dpr_car_rentals/src/repository/FeedbackRepository.dart';
 import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
 import 'package:dpr_car_rentals/src/repository/UserRepository.dart';
 import 'package:dpr_car_rentals/src/services/FirebaseService.dart';
@@ -44,7 +45,7 @@ class MyApp extends StatelessWidget {
           create: (context) => ChatBloc(SessionHelpers()),
         ),
         BlocProvider<FeedbackBloc>(
-          create: (context) => FeedbackBloc(),
+          create: (context) => FeedbackBloc(FeedbackRepositoryImpl()),
         ),
       ],
       child: MaterialApp(

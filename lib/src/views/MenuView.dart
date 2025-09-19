@@ -11,6 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/ProfileBloc.dart';
 import '../bloc/FeedbackBloc.dart';
 import '../repository/RegisterRepository.dart';
+import '../repository/FeedbackRepository.dart';
 import 'user/UserFeedbackView.dart';
 
 class MenuView extends StatefulWidget {
@@ -185,7 +186,8 @@ class _MenuViewState extends State<MenuView> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => BlocProvider(
-                                    create: (context) => FeedbackBloc(),
+                                    create: (context) =>
+                                        FeedbackBloc(FeedbackRepositoryImpl()),
                                     child: const UserFeedbackView(),
                                   ),
                                 ),

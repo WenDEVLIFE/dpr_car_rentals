@@ -1,5 +1,6 @@
 import 'package:dpr_car_rentals/src/bloc/FeedbackBloc.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
+import 'package:dpr_car_rentals/src/repository/FeedbackRepository.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -359,7 +360,8 @@ class _AdminHomeViewState extends State<AdminHomeView> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => BlocProvider(
-                        create: (context) => FeedbackBloc(),
+                        create: (context) =>
+                            FeedbackBloc(FeedbackRepositoryImpl()),
                         child: const AdminFeedbackView(),
                       ),
                     ),

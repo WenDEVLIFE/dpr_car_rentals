@@ -147,7 +147,7 @@ class _AdminCarViewState extends State<AdminCarView> {
 
           return const Center(child: Text('Welcome to Car Management'));
         },
-      ),
+        ),
     );
   }
 
@@ -362,7 +362,7 @@ class _AdminCarViewState extends State<AdminCarView> {
             ],
           ],
         ),
-      ),
+        ),
     );
   }
 

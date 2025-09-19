@@ -17,6 +17,16 @@ class AddUser extends UserEvent {
   List<Object?> get props => [user];
 }
 
+class RegisterUser extends UserEvent {
+  final UserModel user;
+  final String password;
+
+  RegisterUser(this.user, this.password);
+
+  @override
+  List<Object?> get props => [user, password];
+}
+
 class UpdateUser extends UserEvent {
   final String uid;
   final UserModel user;

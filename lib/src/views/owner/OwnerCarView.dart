@@ -70,111 +70,135 @@ class _OwnerCarViewState extends State<OwnerCarView> {
           ),
         ],
       ),
-      body: BlocBuilder<OwnerCarBloc, OwnerCarState>(
-        builder: (context, state) {
-          if (state is OwnerCarLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is OwnerCarError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  const SizedBox(height: 16),
-                  CustomText(
-                    text: 'Error loading cars',
-                    size: 18,
-                    color: ThemeHelper.textColor,
-                    fontFamily: 'Inter',
-                    weight: FontWeight.w500,
-                  ),
-                  const SizedBox(height: 8),
-                  CustomText(
-                    text: state.message,
-                    size: 14,
-                    color: ThemeHelper.textColor1,
-                    fontFamily: 'Inter',
-                    weight: FontWeight.w400,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loadOwnerCars,
-                    child: const Text('Retry'),
-                  ),
-                ],
+      body: BlocListener<OwnerCarBloc, OwnerCarState>(
+        listener: (context, state) {
+          if (state is OwnerCarOperationSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          } else if (state is OwnerCarError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
               ),
             );
           }
-
-          if (state is OwnerCarLoaded) {
-            return Column(
-              children: [
-                // Search Section
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  color: Colors.white,
-                  child: SearchTextField(
-                    controller: _searchController,
-                    hintText: 'Search your cars...',
-                    onChanged: (query) {
-                      context.read<OwnerCarBloc>().add(SearchOwnerCars(query));
-                    },
-                  ),
-                ),
-
-                // Cars List
-                Expanded(
-                  child: state.filteredCars.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.directions_car_outlined,
-                                size: 64,
-                                color: ThemeHelper.textColor1,
-                              ),
-                              const SizedBox(height: 16),
-                              CustomText(
-                                text: 'No cars found',
-                                size: 18,
-                                color: ThemeHelper.textColor,
-                                fontFamily: 'Inter',
-                                weight: FontWeight.w500,
-                              ),
-                              const SizedBox(height: 8),
-                              CustomText(
-                                text: 'Add your first car to get started',
-                                size: 14,
-                                color: ThemeHelper.textColor1,
-                                fontFamily: 'Inter',
-                                weight: FontWeight.w400,
-                              ),
-                              const SizedBox(height: 16),
-                              ElevatedButton.icon(
-                                onPressed: () => _showAddCarDialog(),
-                                icon: const Icon(Icons.add),
-                                label: const Text('Add Car'),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: state.filteredCars.length,
-                          itemBuilder: (context, index) {
-                            return _buildCarCard(state.filteredCars[index]);
-                          },
-                        ),
-                ),
-              ],
-            );
-          }
-
-          return const Center(child: Text('Welcome to Car Management'));
         },
+        child: BlocBuilder<OwnerCarBloc, OwnerCarState>(
+          builder: (context, state) {
+            if (state is OwnerCarLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is OwnerCarError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline,
+                        size: 64, color: Colors.red),
+                    const SizedBox(height: 16),
+                    CustomText(
+                      text: 'Error loading cars',
+                      size: 18,
+                      color: ThemeHelper.textColor,
+                      fontFamily: 'Inter',
+                      weight: FontWeight.w500,
+                    ),
+                    const SizedBox(height: 8),
+                    CustomText(
+                      text: state.message,
+                      size: 14,
+                      color: ThemeHelper.textColor1,
+                      fontFamily: 'Inter',
+                      weight: FontWeight.w400,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _loadOwnerCars,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (state is OwnerCarLoaded) {
+              return Column(
+                children: [
+                  // Search Section
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.white,
+                    child: SearchTextField(
+                      controller: _searchController,
+                      hintText: 'Search your cars...',
+                      onChanged: (query) {
+                        context
+                            .read<OwnerCarBloc>()
+                            .add(SearchOwnerCars(query));
+                      },
+                    ),
+                  ),
+
+                  // Cars List
+                  Expanded(
+                    child: state.filteredCars.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.directions_car_outlined,
+                                  size: 64,
+                                  color: ThemeHelper.textColor1,
+                                ),
+                                const SizedBox(height: 16),
+                                CustomText(
+                                  text: 'No cars found',
+                                  size: 18,
+                                  color: ThemeHelper.textColor,
+                                  fontFamily: 'Inter',
+                                  weight: FontWeight.w500,
+                                ),
+                                const SizedBox(height: 8),
+                                CustomText(
+                                  text: 'Add your first car to get started',
+                                  size: 14,
+                                  color: ThemeHelper.textColor1,
+                                  fontFamily: 'Inter',
+                                  weight: FontWeight.w400,
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton.icon(
+                                  onPressed: () => _showAddCarDialog(),
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Add Car'),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: state.filteredCars.length,
+                            itemBuilder: (context, index) {
+                              return _buildCarCard(state.filteredCars[index]);
+                            },
+                          ),
+                  ),
+                ],
+              );
+            }
+
+            return const Center(child: Text('Welcome to Car Management'));
+          },
+        ),
       ),
     );
   }

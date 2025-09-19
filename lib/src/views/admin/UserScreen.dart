@@ -139,24 +139,16 @@ class _UserScreenState extends State<UserScreen> {
                     .read<UserBloc>()
                     .add(UpdateUser(user.uid, updatedUser));
               } else {
-                // Register with Firebase Auth and Firestore
-                final success = await registerRepository.registerUser(
+                // Create user through UserBloc for consistent state management
+                final newUser = UserModel(
+                  uid: '', // Will be set by Firebase Auth
                   email: email,
                   fullName: fullName,
-                  password: password,
                   role: selectedRole,
                 );
-                if (success) {
-                  outerContext
-                      .read<UserBloc>()
-                      .add(LoadUsers()); // Reload users
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Failed to register user'),
-                        backgroundColor: Colors.red),
-                  );
-                }
+                outerContext
+                    .read<UserBloc>()
+                    .add(RegisterUser(newUser, password));
               }
 
               Navigator.pop(context);
@@ -208,11 +200,19 @@ class _UserScreenState extends State<UserScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: CustomText(text: 'Users', size: 20, color: Colors.white, fontFamily: 'Inter', weight: FontWeight.w700),
+          title: CustomText(
+              text: 'Users',
+              size: 20,
+              color: Colors.white,
+              fontFamily: 'Inter',
+              weight: FontWeight.w700),
           backgroundColor: Colors.blue,
           actions: [
             IconButton(
-              icon: const Icon(Icons.add, color: Colors.white,),
+              icon: const Icon(
+                Icons.add,
+                color: Colors.white,
+              ),
               onPressed: () => _showUserDialog(context),
             ),
           ],

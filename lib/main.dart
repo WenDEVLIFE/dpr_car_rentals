@@ -9,6 +9,7 @@ import 'package:dpr_car_rentals/src/bloc/UserHomeBloc.dart';
 import 'package:dpr_car_rentals/src/repository/CarRepository.dart';
 import 'package:dpr_car_rentals/src/repository/FeedbackRepository.dart';
 import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
+import 'package:dpr_car_rentals/src/repository/RegisterRepository.dart';
 import 'package:dpr_car_rentals/src/repository/UserRepository.dart';
 import 'package:dpr_car_rentals/src/services/FirebaseService.dart';
 import 'package:dpr_car_rentals/src/views/SplashScreen.dart';
@@ -39,7 +40,8 @@ class MyApp extends StatelessWidget {
           create: (context) => LoginBloc(),
         ),
         BlocProvider<UserBloc>(
-          create: (context) => UserBloc(UserRepositoryImpl()),
+          create: (context) =>
+              UserBloc(UserRepositoryImpl(), RegisterRepositoryImpl()),
         ),
         BlocProvider<UserHomeBloc>(
           create: (context) =>

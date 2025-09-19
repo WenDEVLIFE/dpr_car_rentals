@@ -1,16 +1,20 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../models/UserModel.dart';
+import '../repository/RegisterRepository.dart';
 import '../repository/UserRepository.dart';
 import 'event/UserEvent.dart';
 import 'state/UserState.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
   final UserRepository userRepository;
+  final RegisterRepository registerRepository;
   List<UserModel> _allUsers = [];
 
-  UserBloc(this.userRepository) : super(UserInitial()) {
+  UserBloc(this.userRepository, this.registerRepository)
+      : super(UserInitial()) {
     on<LoadUsers>(_onLoadUsers);
     on<AddUser>(_onAddUser);
+    on<RegisterUser>(_onRegisterUser);
     on<UpdateUser>(_onUpdateUser);
     on<DeleteUser>(_onDeleteUser);
     on<SearchUsers>(_onSearchUsers);
@@ -35,6 +39,25 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       add(LoadUsers()); // Reload users to update the list
     } catch (e) {
       emit(UserError('Failed to add user: $e'));
+    }
+  }
+
+  void _onRegisterUser(RegisterUser event, Emitter<UserState> emit) async {
+    try {
+      final success = await registerRepository.registerUser(
+        email: event.user.email,
+        fullName: event.user.fullName,
+        password: event.password,
+        role: event.user.role,
+      );
+      if (success) {
+        emit(UserOperationSuccess('User registered successfully'));
+        add(LoadUsers()); // Reload users to update the list
+      } else {
+        emit(UserError('Failed to register user'));
+      }
+    } catch (e) {
+      emit(UserError('Failed to register user: $e'));
     }
   }
 

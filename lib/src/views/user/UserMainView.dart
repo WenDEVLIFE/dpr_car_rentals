@@ -1,9 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../LoginScreen.dart';
 import '../../widget/modern_navigation_bar.dart';
 import '../MenuView.dart';
+import 'UserHomeView.dart';
 
 class UserMainView extends StatefulWidget {
   const UserMainView({super.key});
@@ -17,12 +15,7 @@ class _UserMainViewState extends State<UserMainView> {
 
   final List<Widget> _screens = [
     // Home Screen
-    const Center(
-      child: Text(
-        'Home Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
+    const UserHomeView(),
     // Search Screen
     const Center(
       child: Text(

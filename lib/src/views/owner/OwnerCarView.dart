@@ -8,6 +8,7 @@ import 'package:dpr_car_rentals/src/models/CarModel.dart';
 import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/CustomTextField.dart';
+import 'package:dpr_car_rentals/src/widget/ImageZoomView.dart';
 import 'package:dpr_car_rentals/src/widget/SearchTextField.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -191,24 +192,40 @@ class _OwnerCarViewState extends State<OwnerCarView> {
             Row(
               children: [
                 // Car Image
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: ThemeHelper.secondaryColor,
-                    borderRadius: BorderRadius.circular(8),
+                GestureDetector(
+                  onTap: car.photoUrl != null
+                      ? () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ImageZoomView(
+                                imageUrl: car.photoUrl,
+                                heroTag: 'car-${car.id}',
+                              ),
+                            ),
+                          )
+                      : null,
+                  child: Hero(
+                    tag: 'car-${car.id}',
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: ThemeHelper.secondaryColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: car.photoUrl != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                car.photoUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.directions_car, size: 40),
+                              ),
+                            )
+                          : const Icon(Icons.directions_car, size: 40),
+                    ),
                   ),
-                  child: car.photoUrl != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            car.photoUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.directions_car, size: 40),
-                          ),
-                        )
-                      : const Icon(Icons.directions_car, size: 40),
                 ),
                 const SizedBox(width: 12),
                 // Car Info
@@ -424,36 +441,51 @@ class _OwnerCarViewState extends State<OwnerCarView> {
                 children: [
                   // Photo Upload
                   GestureDetector(
-                    onTap: () async {
-                      final picker = ImagePicker();
-                      final pickedFile =
-                          await picker.pickImage(source: ImageSource.gallery);
-                      if (pickedFile != null) {
-                        setState(() => selectedPhoto = File(pickedFile.path));
-                      }
-                    },
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: ThemeHelper.secondaryColor,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: ThemeHelper.borderColor),
-                      ),
-                      child: selectedPhoto != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child:
-                                  Image.file(selectedPhoto!, fit: BoxFit.cover),
+                    onTap: selectedPhoto != null || car?.photoUrl != null
+                        ? () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ImageZoomView(
+                                  imageUrl: car?.photoUrl,
+                                  imageFile: selectedPhoto,
+                                  heroTag: 'dialog-${car?.id ?? 'new'}',
+                                ),
+                              ),
                             )
-                          : car?.photoUrl != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(car!.photoUrl!,
-                                      fit: BoxFit.cover),
-                                )
-                              : const Icon(Icons.add_a_photo,
-                                  size: 40, color: Colors.grey),
+                        : () async {
+                            final picker = ImagePicker();
+                            final pickedFile = await picker.pickImage(
+                                source: ImageSource.gallery);
+                            if (pickedFile != null) {
+                              setState(
+                                  () => selectedPhoto = File(pickedFile.path));
+                            }
+                          },
+                    child: Hero(
+                      tag: 'dialog-${car?.id ?? 'new'}',
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: ThemeHelper.secondaryColor,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: ThemeHelper.borderColor),
+                        ),
+                        child: selectedPhoto != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(selectedPhoto!,
+                                    fit: BoxFit.cover),
+                              )
+                            : car?.photoUrl != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(car!.photoUrl!,
+                                        fit: BoxFit.cover),
+                                  )
+                                : const Icon(Icons.add_a_photo,
+                                    size: 40, color: Colors.grey),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),

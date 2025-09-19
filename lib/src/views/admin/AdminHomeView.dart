@@ -1,6 +1,7 @@
 import 'package:dpr_car_rentals/src/bloc/FeedbackBloc.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/repository/FeedbackRepository.dart';
+import 'package:dpr_car_rentals/src/views/admin/UserScreen.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -311,24 +312,12 @@ class _AdminHomeViewState extends State<AdminHomeView> {
           children: [
             Expanded(
               child: _buildActionCard(
-                icon: Icons.add_circle,
-                title: 'Add Car',
-                subtitle: 'Add new vehicle',
-                color: Colors.blue,
-                onTap: () {
-                  // TODO: Navigate to add car screen
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
                 icon: Icons.people,
                 title: 'Manage Users',
                 subtitle: 'View all users',
                 color: Colors.green,
                 onTap: () {
-                  // TODO: Navigate to users screen
+                 Navigator.push(context, MaterialPageRoute(builder: (context) =>UserScreen()));
                 },
               ),
             ),
@@ -337,18 +326,6 @@ class _AdminHomeViewState extends State<AdminHomeView> {
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.calendar_today,
-                title: 'Bookings',
-                subtitle: 'View reservations',
-                color: Colors.orange,
-                onTap: () {
-                  // TODO: Navigate to bookings screen
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
             Expanded(
               child: _buildActionCard(
                 icon: Icons.feedback,

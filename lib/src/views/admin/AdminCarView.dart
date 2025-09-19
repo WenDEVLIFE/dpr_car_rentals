@@ -4,6 +4,7 @@ import 'package:dpr_car_rentals/src/bloc/state/CarState.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/models/CarModel.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
+import 'package:dpr_car_rentals/src/widget/ImageZoomView.dart';
 import 'package:dpr_car_rentals/src/widget/SearchTextField.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -220,24 +221,40 @@ class _AdminCarViewState extends State<AdminCarView> {
             Row(
               children: [
                 // Car Image
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: ThemeHelper.secondaryColor,
-                    borderRadius: BorderRadius.circular(8),
+                GestureDetector(
+                  onTap: car.photoUrl != null
+                      ? () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ImageZoomView(
+                                imageUrl: car.photoUrl,
+                                heroTag: 'admin-car-${car.id}',
+                              ),
+                            ),
+                          )
+                      : null,
+                  child: Hero(
+                    tag: 'admin-car-${car.id}',
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: ThemeHelper.secondaryColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: car.photoUrl != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                car.photoUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.directions_car, size: 30),
+                              ),
+                            )
+                          : const Icon(Icons.directions_car, size: 30),
+                    ),
                   ),
-                  child: car.photoUrl != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            car.photoUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.directions_car, size: 30),
-                          ),
-                        )
-                      : const Icon(Icons.directions_car, size: 30),
                 ),
                 const SizedBox(width: 12),
                 // Car Info

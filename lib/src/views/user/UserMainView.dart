@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widget/modern_navigation_bar.dart';
 import '../MenuView.dart';
+import 'ChatView.dart';
 import 'UserHomeView.dart';
 
 class UserMainView extends StatefulWidget {
@@ -31,12 +32,7 @@ class _UserMainViewState extends State<UserMainView> {
       ),
     ),
 
-    const Center(
-      child: Text(
-        'Search Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
+    const ChatView(),
 
     const MenuView(),
   ];

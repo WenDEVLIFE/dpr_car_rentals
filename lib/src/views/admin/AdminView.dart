@@ -14,7 +14,6 @@ class AdminDashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<AdminDashboardView> {
   int _currentIndex = 0;
-
   final List<Widget> _screens = [
     // Home Screen
     const Center(
@@ -23,10 +22,10 @@ class _DashboardViewState extends State<AdminDashboardView> {
         style: TextStyle(fontSize: 24),
       ),
     ),
-    // Search Screen
+    // Cars Screen
     const Center(
       child: Text(
-        'Search Screen',
+        'Cars Screen',
         style: TextStyle(fontSize: 24),
       ),
     ),
@@ -34,9 +33,7 @@ class _DashboardViewState extends State<AdminDashboardView> {
     const UserScreen(),
 
     const MenuView(),
-
   ];
-
   void _onTabTapped(int index) {
     setState(() {
       _currentIndex = index;

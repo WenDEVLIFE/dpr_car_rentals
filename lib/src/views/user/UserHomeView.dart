@@ -4,7 +4,7 @@ import 'package:dpr_car_rentals/src/bloc/state/UserHomeState.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/models/UserModel.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
-import 'package:dpr_car_rentals/src/widget/SearchTextField.dart';
+import 'package:dpr_car_rentals/src/widget/ModernSearchBar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -134,11 +134,14 @@ class _UserHomeViewState extends State<UserHomeView> {
                       const SizedBox(height: 24),
 
                       // Search Bar
-                      SearchTextField(
+                      ModernSearchBar(
                         controller: _searchController,
                         hintText: 'Search for cars...',
                         onChanged: (query) {
                           context.read<UserHomeBloc>().add(SearchCars(query));
+                        },
+                        onClear: () {
+                          context.read<UserHomeBloc>().add(SearchCars(''));
                         },
                       ),
 

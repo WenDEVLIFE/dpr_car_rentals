@@ -1,3 +1,4 @@
+import 'package:dpr_car_rentals/src/bloc/ChatBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/LoginBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/UserBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/UserHomeBloc.dart';
@@ -37,6 +38,9 @@ class MyApp extends StatelessWidget {
         BlocProvider<UserHomeBloc>(
           create: (context) =>
               UserHomeBloc(UserRepositoryImpl(), SessionHelpers()),
+        ),
+        BlocProvider<ChatBloc>(
+          create: (context) => ChatBloc(SessionHelpers()),
         ),
       ],
       child: MaterialApp(

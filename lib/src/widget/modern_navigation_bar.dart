@@ -29,30 +29,29 @@ class ModernNavigationBar extends StatelessWidget {
         child: Container(
           height: 70,
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-           if (role == 'user') ...[
-            Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
-        Expanded(child: _buildNavItem(1, Icons.car_rental, 'Rent a Car')),
-        Expanded(child: _buildNavItem(2, Icons.history, 'History')),
-        Expanded(child: _buildNavItem(3, Icons.chat_bubble_outline, 'Chat')),
-        Expanded(child: _buildNavItem(4, Icons.list_outlined, 'Menu')),
-           ] else if (role == 'admin') ...[
-        Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
-        Expanded(child: _buildNavItem(1, Icons.car_rental, 'Cars')),
-             Expanded(child: _buildNavItem(2, Icons.person, 'Users')),
-        Expanded(child: _buildNavItem(3, Icons.list_outlined, 'Menu')),
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+            if (role == 'user') ...[
+              Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
+              Expanded(child: _buildNavItem(1, Icons.car_rental, 'Rent a Car')),
+              Expanded(child: _buildNavItem(2, Icons.history, 'History')),
+              Expanded(
+                  child: _buildNavItem(3, Icons.chat_bubble_outline, 'Chat')),
+              Expanded(child: _buildNavItem(4, Icons.list_outlined, 'Menu')),
+            ] else if (role == 'admin') ...[
+              Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
+              Expanded(child: _buildNavItem(1, Icons.car_rental, 'Cars')),
+              Expanded(child: _buildNavItem(2, Icons.person, 'Users')),
+              Expanded(child: _buildNavItem(3, Icons.list_outlined, 'Menu')),
             ] else if (role == 'owner') ...[
-            Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
-        Expanded(child: _buildNavItem(1, Icons.car_rental, 'Cars')),
-        Expanded(child: _buildNavItem(2, Icons.book, 'Bookings')),
-        Expanded(child: _buildNavItem(3, Icons.chat_bubble_outline, 'Chats')),
-        Expanded(child: _buildNavItem(4, Icons.list_outlined, 'Menu')),
-               ]
+              Expanded(child: _buildNavItem(0, Icons.home_rounded, 'Home')),
+              Expanded(child: _buildNavItem(1, Icons.car_rental, 'Cars')),
+              Expanded(child: _buildNavItem(2, Icons.book, 'Bookings')),
+              Expanded(
+                  child: _buildNavItem(3, Icons.chat_bubble_outline, 'Chats')),
+              Expanded(child: _buildNavItem(4, Icons.list_outlined, 'Menu')),
             ]
-
-          ),
+          ]),
         ),
       ),
     );

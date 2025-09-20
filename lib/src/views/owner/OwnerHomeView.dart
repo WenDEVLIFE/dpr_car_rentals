@@ -1,10 +1,19 @@
 import 'package:dpr_car_rentals/src/bloc/OwnerHomeBloc.dart';
+import 'package:dpr_car_rentals/src/bloc/OwnerHomeBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/event/OwnerHomeEvent.dart';
 import 'package:dpr_car_rentals/src/bloc/state/OwnerHomeState.dart';
+import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
+import 'package:dpr_car_rentals/src/models/ReservationModel.dart';
+import 'package:dpr_car_rentals/src/models/CarModel.dart';
+import 'package:dpr_car_rentals/src/repository/ReservationRepository.dart';
+import 'package:dpr_car_rentals/src/repository/CarRepository.dart';
+import 'package:dpr_car_rentals/src/views/owner/OwnerBookingsView.dart';
+import 'package:dpr_car_rentals/src/views/owner/PaymentProcessView.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class OwnerHomeView extends StatefulWidget {
@@ -15,11 +24,105 @@ class OwnerHomeView extends StatefulWidget {
 }
 
 class _OwnerHomeViewState extends State<OwnerHomeView> {
+  final ReservationRepositoryImpl _reservationRepository =
+      ReservationRepositoryImpl();
+  final CarRepositoryImpl _carRepository = CarRepositoryImpl();
+  final SessionHelpers _sessionHelpers = SessionHelpers();
+
   @override
   void initState() {
     super.initState();
     // Load owner home data when view initializes
     context.read<OwnerHomeBloc>().add(LoadOwnerHomeData());
+  }
+
+  Future<void> _updateReservationStatus(
+      String reservationId, ReservationStatus status,
+      {String? rejectionReason}) async {
+    try {
+      await _reservationRepository.updateReservationStatus(
+          reservationId, status,
+          rejectionReason: rejectionReason);
+      _showToast(
+          'Reservation ${status.toString().split('.').last} successfully');
+      // Refresh the dashboard data
+      context.read<OwnerHomeBloc>().add(RefreshOwnerHomeData());
+    } catch (e) {
+      print('Error updating reservation status: $e');
+      _showToast('Failed to update reservation status');
+    }
+  }
+
+  Future<void> _showRejectDialog(String reservationId) async {
+    final TextEditingController reasonController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reject Reservation'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Please provide a reason for rejection:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: reasonController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Enter rejection reason...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (reasonController.text.trim().isNotEmpty) {
+                Navigator.pop(context);
+                _updateReservationStatus(
+                    reservationId, ReservationStatus.rejected,
+                    rejectionReason: reasonController.text.trim());
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Reject', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _navigateToPayment(
+      ReservationModel reservation, CarModel car) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentProcessView(
+          reservation: reservation,
+          car: car,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      // Payment processed successfully, refresh the view
+      context.read<OwnerHomeBloc>().add(RefreshOwnerHomeData());
+    }
+  }
+
+  void _showToast(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.black87,
+      textColor: Colors.white,
+    );
   }
 
   @override
@@ -111,6 +214,14 @@ class _OwnerHomeViewState extends State<OwnerHomeView> {
               elevation: 0,
               backgroundColor: Colors.blue,
               foregroundColor: Colors.blue,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.white),
+                  onPressed: () {
+                    context.read<OwnerHomeBloc>().add(RefreshOwnerHomeData());
+                  },
+                ),
+              ],
             ),
             body: SafeArea(
               child: SingleChildScrollView(
@@ -356,7 +467,12 @@ class _OwnerHomeViewState extends State<OwnerHomeView> {
             ),
             TextButton(
               onPressed: () {
-                // TODO: Navigate to all rentals
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const OwnerBookingsView(),
+                  ),
+                );
               },
               child: CustomText(
                 text: 'View All',
@@ -535,7 +651,12 @@ class _OwnerHomeViewState extends State<OwnerHomeView> {
             ),
             TextButton(
               onPressed: () {
-                // TODO: Navigate to all bookings
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const OwnerBookingsView(),
+                  ),
+                );
               },
               child: CustomText(
                 text: 'View All',
@@ -680,8 +801,29 @@ class _OwnerHomeViewState extends State<OwnerHomeView> {
               Row(
                 children: [
                   ElevatedButton(
-                    onPressed: () {
-                      // TODO: Approve booking
+                    onPressed: () async {
+                      // Get the reservation and car details for payment processing
+                      try {
+                        final userInfo = await _sessionHelpers.getUserInfo();
+                        if (userInfo?['uid'] != null) {
+                          final ownerId = userInfo!['uid'] as String;
+                          final reservations = await _reservationRepository
+                              .getReservationsByOwnerAndStatus(
+                                  ownerId, ReservationStatus.pending)
+                              .first;
+                          final reservation = reservations
+                              .firstWhere((r) => r.id == booking.id);
+
+                          final cars = await _carRepository.getAllCars().first;
+                          final car =
+                              cars.firstWhere((c) => c.id == reservation.carId);
+
+                          await _navigateToPayment(reservation, car);
+                        }
+                      } catch (e) {
+                        print('Error approving booking: $e');
+                        _showToast('Failed to approve booking');
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
@@ -691,13 +833,13 @@ class _OwnerHomeViewState extends State<OwnerHomeView> {
                     ),
                     child: const Text(
                       'Approve',
-                      style: TextStyle(fontSize: 10),
+                      style: TextStyle(fontSize: 10, color: Colors.white),
                     ),
                   ),
                   const SizedBox(width: 4),
                   ElevatedButton(
                     onPressed: () {
-                      // TODO: Reject booking
+                      _showRejectDialog(booking.id);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
@@ -707,7 +849,7 @@ class _OwnerHomeViewState extends State<OwnerHomeView> {
                     ),
                     child: const Text(
                       'Reject',
-                      style: TextStyle(fontSize: 10),
+                      style: TextStyle(fontSize: 10, color: Colors.white),
                     ),
                   ),
                 ],

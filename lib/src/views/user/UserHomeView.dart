@@ -5,14 +5,18 @@ import 'package:dpr_car_rentals/src/bloc/state/UserHomeState.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/models/CarModel.dart';
 import 'package:dpr_car_rentals/src/models/UserModel.dart';
+import 'package:dpr_car_rentals/src/repository/ReservationRepository.dart';
+import 'package:dpr_car_rentals/src/views/user/BookCarView.dart';
 import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/ImageZoomView.dart';
 import 'package:dpr_car_rentals/src/views/user/UserBookingsView.dart';
 import 'package:dpr_car_rentals/src/widget/ModernSearchBar.dart';
 import 'package:dpr_car_rentals/src/widget/CarDisplayWidgets.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class UserHomeView extends StatefulWidget {
   const UserHomeView({super.key});
@@ -26,6 +30,10 @@ class _UserHomeViewState extends State<UserHomeView> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _featuredCarsKey = GlobalKey();
   Timer? _debounceTimer;
+
+  final ReservationRepositoryImpl _reservationRepository =
+      ReservationRepositoryImpl();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -50,6 +58,47 @@ class _UserHomeViewState extends State<UserHomeView> {
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
       context.read<UserHomeBloc>().add(SearchCars(query));
     });
+  }
+
+  Future<void> _navigateToBooking(CarModel car) async {
+    // Check if user is logged in
+    final currentUser = _auth.currentUser;
+    if (currentUser == null) {
+      _showToast('Please login to book a car');
+      return;
+    }
+
+    // Check if user already has an active reservation
+    final hasActiveReservation =
+        await _reservationRepository.hasUserActiveReservation(currentUser.uid);
+    if (hasActiveReservation) {
+      _showToast(
+          'You already have an active reservation. Please complete or cancel it first.');
+      return;
+    }
+
+    // Navigate to booking screen
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookCarView(car: car),
+      ),
+    );
+
+    // Refresh if booking was successful
+    if (result == true) {
+      context.read<UserHomeBloc>().add(LoadHomeData());
+    }
+  }
+
+  void _showToast(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.black87,
+      textColor: Colors.white,
+    );
   }
 
   @override
@@ -841,9 +890,9 @@ class _UserHomeViewState extends State<UserHomeView> {
                             text: 'Book Now',
                             textColor: Colors.white,
                             backgroundColor: Colors.blue,
-                            onPressed: () {
+                            onPressed: () async {
                               Navigator.of(context).pop();
-                              // TODO: Navigate to booking
+                              await _navigateToBooking(car);
                             },
                           ),
                         ),

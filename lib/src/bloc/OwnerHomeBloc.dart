@@ -1,12 +1,26 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../helpers/SessionHelpers.dart';
+import '../repository/ReservationRepository.dart';
+import '../repository/PaymentRepository.dart';
+import '../repository/CarRepository.dart';
+import '../models/ReservationModel.dart';
+import '../models/PaymentModel.dart';
+import '../models/CarModel.dart';
 import 'event/OwnerHomeEvent.dart';
 import 'state/OwnerHomeState.dart';
+import 'package:intl/intl.dart';
 
 class OwnerHomeBloc extends Bloc<OwnerHomeEvent, OwnerHomeState> {
   final SessionHelpers sessionHelpers;
+  final ReservationRepositoryImpl _reservationRepository;
+  final PaymentRepositoryImpl _paymentRepository;
+  final CarRepositoryImpl _carRepository;
 
-  OwnerHomeBloc(this.sessionHelpers) : super(OwnerHomeInitial()) {
+  OwnerHomeBloc(this.sessionHelpers)
+      : _reservationRepository = ReservationRepositoryImpl(),
+        _paymentRepository = PaymentRepositoryImpl(),
+        _carRepository = CarRepositoryImpl(),
+        super(OwnerHomeInitial()) {
     on<LoadOwnerHomeData>(_onLoadOwnerHomeData);
     on<RefreshOwnerHomeData>(_onRefreshOwnerHomeData);
   }
@@ -15,14 +29,23 @@ class OwnerHomeBloc extends Bloc<OwnerHomeEvent, OwnerHomeState> {
       LoadOwnerHomeData event, Emitter<OwnerHomeState> emit) async {
     emit(OwnerHomeLoading());
     try {
-      // Load earnings data (placeholder for now)
-      final earnings = _getEarningsData();
+      // Get current owner ID
+      final userInfo = await sessionHelpers.getUserInfo();
+      if (userInfo == null || userInfo['uid'] == null) {
+        emit(OwnerHomeError('User not logged in'));
+        return;
+      }
 
-      // Load active rentals (placeholder for now)
-      final activeRentals = _getActiveRentals();
+      final ownerId = userInfo['uid'] as String;
 
-      // Load pending bookings (placeholder for now)
-      final pendingBookings = _getPendingBookings();
+      // Load real earnings data
+      final earnings = await _calculateEarningsData(ownerId);
+
+      // Load real active rentals
+      final activeRentals = await _getActiveRentalsData(ownerId);
+
+      // Load real pending bookings
+      final pendingBookings = await _getPendingBookingsData(ownerId);
 
       emit(OwnerHomeLoaded(
         earnings: earnings,
@@ -40,66 +63,146 @@ class OwnerHomeBloc extends Bloc<OwnerHomeEvent, OwnerHomeState> {
     add(LoadOwnerHomeData());
   }
 
-  // Placeholder data methods - replace with actual API calls when backend is ready
-  EarningsData _getEarningsData() {
-    return EarningsData(
-      totalEarnings: 125000.0,
-      monthlyEarnings: 25000.0,
-      weeklyEarnings: 6500.0,
-      totalBookings: 45,
-    );
+  // Real data methods using actual repositories
+  Future<EarningsData> _calculateEarningsData(String ownerId) async {
+    try {
+      // Get all completed payments for this owner
+      final payments =
+          await _paymentRepository.getPaymentsByOwner(ownerId).first;
+      final completedPayments =
+          payments.where((p) => p.status == PaymentStatus.completed).toList();
+
+      // Calculate total earnings
+      final totalEarnings = completedPayments.fold<double>(
+          0.0, (sum, payment) => sum + payment.amount);
+
+      // Calculate this month's earnings
+      final now = DateTime.now();
+      final startOfMonth = DateTime(now.year, now.month, 1);
+      final monthlyPayments = completedPayments
+          .where((p) => p.createdAt.isAfter(startOfMonth))
+          .toList();
+      final monthlyEarnings = monthlyPayments.fold<double>(
+          0.0, (sum, payment) => sum + payment.amount);
+
+      // Calculate this week's earnings
+      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+      final weeklyPayments = completedPayments
+          .where((p) => p.createdAt.isAfter(startOfWeek))
+          .toList();
+      final weeklyEarnings = weeklyPayments.fold<double>(
+          0.0, (sum, payment) => sum + payment.amount);
+
+      // Get total bookings count
+      final allReservations =
+          await _reservationRepository.getReservationsByOwner(ownerId).first;
+      final totalBookings = allReservations.length;
+
+      return EarningsData(
+        totalEarnings: totalEarnings,
+        monthlyEarnings: monthlyEarnings,
+        weeklyEarnings: weeklyEarnings,
+        totalBookings: totalBookings,
+      );
+    } catch (e) {
+      print('Error calculating earnings: $e');
+      // Return default values on error
+      return EarningsData(
+        totalEarnings: 0.0,
+        monthlyEarnings: 0.0,
+        weeklyEarnings: 0.0,
+        totalBookings: 0,
+      );
+    }
   }
 
-  List<ActiveRental> _getActiveRentals() {
-    return [
-      ActiveRental(
-        id: '1',
-        carName: 'Toyota Camry',
-        customerName: 'John Smith',
-        startDate: '2025-01-15',
-        endDate: '2025-01-20',
-        dailyRate: 2500.0,
-        status: 'Active',
-      ),
-      ActiveRental(
-        id: '2',
-        carName: 'Honda Civic',
-        customerName: 'Maria Garcia',
-        startDate: '2025-01-14',
-        endDate: '2025-01-18',
-        dailyRate: 2200.0,
-        status: 'Active',
-      ),
-      ActiveRental(
-        id: '3',
-        carName: 'Ford Mustang',
-        customerName: 'Robert Johnson',
-        startDate: '2025-01-16',
-        endDate: '2025-01-25',
-        dailyRate: 4500.0,
-        status: 'Active',
-      ),
-    ];
+  Future<List<ActiveRental>> _getActiveRentalsData(String ownerId) async {
+    try {
+      // Get reservations that are currently in use
+      final inUseReservations = await _reservationRepository
+          .getReservationsByOwnerAndStatus(ownerId, ReservationStatus.inUse)
+          .first;
+
+      List<ActiveRental> activeRentals = [];
+
+      for (var reservation in inUseReservations) {
+        try {
+          // Get car details
+          final cars = await _carRepository.getAllCars().first;
+          final carIndex = cars.indexWhere((c) => c.id == reservation.carId);
+
+          if (carIndex != -1) {
+            final car = cars[carIndex];
+
+            activeRentals.add(ActiveRental(
+              id: reservation.id,
+              carName: '${car.name} ${car.model}',
+              customerName: reservation.fullName,
+              startDate: DateFormat('MMM dd').format(reservation.startDate),
+              endDate: DateFormat('MMM dd').format(reservation.endDate),
+              dailyRate: car.dailyRate,
+              status: 'Active',
+            ));
+          } else {
+            print(
+                'Car not found for reservation ${reservation.id}, carId: ${reservation.carId}');
+          }
+        } catch (e) {
+          print('Error processing reservation ${reservation.id}: $e');
+          // Continue with next reservation
+        }
+      }
+
+      return activeRentals;
+    } catch (e) {
+      print('Error getting active rentals: $e');
+      return [];
+    }
   }
 
-  List<PendingBooking> _getPendingBookings() {
-    return [
-      PendingBooking(
-        id: '1',
-        carName: 'BMW X3',
-        customerName: 'Sarah Wilson',
-        requestedDate: '2025-01-22',
-        duration: '5 days',
-        totalAmount: 25000.0,
-      ),
-      PendingBooking(
-        id: '2',
-        carName: 'Tesla Model 3',
-        customerName: 'David Brown',
-        requestedDate: '2025-01-25',
-        duration: '3 days',
-        totalAmount: 18000.0,
-      ),
-    ];
+  Future<List<PendingBooking>> _getPendingBookingsData(String ownerId) async {
+    try {
+      // Get reservations that are pending approval
+      final pendingReservations = await _reservationRepository
+          .getReservationsByOwnerAndStatus(ownerId, ReservationStatus.pending)
+          .first;
+
+      List<PendingBooking> pendingBookings = [];
+
+      for (var reservation in pendingReservations) {
+        try {
+          // Get car details
+          final cars = await _carRepository.getAllCars().first;
+          final carIndex = cars.indexWhere((c) => c.id == reservation.carId);
+
+          if (carIndex != -1) {
+            final car = cars[carIndex];
+            final totalAmount = car.dailyRate * reservation.durationInDays;
+
+            pendingBookings.add(PendingBooking(
+              id: reservation.id,
+              carName: '${car.name} ${car.model}',
+              customerName: reservation.fullName,
+              requestedDate:
+                  DateFormat('MMM dd, yyyy').format(reservation.startDate),
+              duration:
+                  '${reservation.durationInDays} day${reservation.durationInDays > 1 ? 's' : ''}',
+              totalAmount: totalAmount,
+            ));
+          } else {
+            print(
+                'Car not found for pending reservation ${reservation.id}, carId: ${reservation.carId}');
+          }
+        } catch (e) {
+          print('Error processing pending reservation ${reservation.id}: $e');
+          // Continue with next reservation
+        }
+      }
+
+      return pendingBookings;
+    } catch (e) {
+      print('Error getting pending bookings: $e');
+      return [];
+    }
   }
 }

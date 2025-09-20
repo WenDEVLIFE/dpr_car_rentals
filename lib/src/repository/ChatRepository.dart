@@ -13,6 +13,7 @@ abstract class ChatRepository {
       String chatId, String message, String senderId);
   Future<void> markMessagesAsRead(String chatId, String userId);
   Future<void> deleteChat(String chatId, String userId);
+  Future<void> deleteMessage(String messageId, String userId, String chatId);
 
   // Messages
   Stream<List<ChatMessage>> getChatMessages(String chatId);
@@ -218,6 +219,75 @@ class ChatRepositoryImpl implements ChatRepository {
     } catch (e) {
       print('🚨 Error deleting chat: $e');
       rethrow;
+    }
+  }
+
+  @override
+  Future<void> deleteMessage(
+      String messageId, String userId, String chatId) async {
+    try {
+      // First, get the message to verify the user is the sender
+      final messageDoc =
+          await _firestore.collection(_messagesCollection).doc(messageId).get();
+
+      if (!messageDoc.exists) {
+        throw Exception('Message not found');
+      }
+
+      final messageData = messageDoc.data() as Map<String, dynamic>;
+      final messageSenderId = messageData['senderId'] as String?;
+
+      if (messageSenderId != userId) {
+        throw Exception('You can only delete your own messages');
+      }
+
+      // Delete the message
+      await _firestore.collection(_messagesCollection).doc(messageId).delete();
+
+      // Check if this was the last message in the chat and update chat's last message if needed
+      await _updateChatLastMessageAfterDeletion(chatId);
+
+      print('✅ Message deleted successfully: $messageId');
+    } catch (e) {
+      print('🚨 Error deleting message: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> _updateChatLastMessageAfterDeletion(String chatId) async {
+    try {
+      // Get the most recent message in this chat
+      final messagesQuery = await _firestore
+          .collection(_messagesCollection)
+          .where('chatId', isEqualTo: chatId)
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .get();
+
+      final chatRef = _firestore.collection(_chatsCollection).doc(chatId);
+
+      if (messagesQuery.docs.isEmpty) {
+        // No messages left, update with default message
+        await chatRef.update({
+          'lastMessage': 'No messages',
+          'lastMessageTime': Timestamp.fromDate(DateTime.now()),
+          'lastMessageSenderId': '',
+        });
+      } else {
+        // Update with the most recent message
+        final lastMessageDoc = messagesQuery.docs.first;
+        final lastMessageData = lastMessageDoc.data();
+
+        await chatRef.update({
+          'lastMessage': lastMessageData['message'] ?? '',
+          'lastMessageTime': lastMessageData['timestamp'] ??
+              Timestamp.fromDate(DateTime.now()),
+          'lastMessageSenderId': lastMessageData['senderId'] ?? '',
+        });
+      }
+    } catch (e) {
+      print('🚨 Error updating chat last message: $e');
+      // Don't rethrow as this is not critical for message deletion
     }
   }
 

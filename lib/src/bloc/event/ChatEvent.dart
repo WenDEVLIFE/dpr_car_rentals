@@ -89,3 +89,13 @@ class DeleteChat extends ChatEvent {
   @override
   List<Object?> get props => [chatId];
 }
+
+class DeleteMessage extends ChatEvent {
+  final String messageId;
+  final String chatId;
+
+  DeleteMessage(this.messageId, this.chatId);
+
+  @override
+  List<Object?> get props => [messageId, chatId];
+}

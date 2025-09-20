@@ -326,96 +326,109 @@ class ChatWidgets {
     String? senderName,
     String? imageUrl,
     MessageType messageType = MessageType.text,
+    VoidCallback? onDelete,
+    String? messageId,
   }) {
     return Align(
       alignment: isOwn ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        constraints: BoxConstraints(
-          maxWidth: messageType == MessageType.image ? 300 : 280,
-        ),
-        decoration: BoxDecoration(
-          color: isOwn ? ThemeHelper.buttonColor : Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft:
-                isOwn ? const Radius.circular(16) : const Radius.circular(4),
-            bottomRight:
-                isOwn ? const Radius.circular(4) : const Radius.circular(16),
+      child: GestureDetector(
+        onLongPress: isOwn && onDelete != null ? onDelete : null,
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          constraints: BoxConstraints(
+            maxWidth: messageType == MessageType.image ? 300 : 280,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+          decoration: BoxDecoration(
+            color: isOwn ? ThemeHelper.buttonColor : Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(16),
+              topRight: const Radius.circular(16),
+              bottomLeft:
+                  isOwn ? const Radius.circular(16) : const Radius.circular(4),
+              bottomRight:
+                  isOwn ? const Radius.circular(4) : const Radius.circular(16),
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!isOwn && senderName != null) ...[
-              CustomText(
-                text: senderName,
-                size: 12,
-                color: ThemeHelper.buttonColor,
-                fontFamily: 'Inter',
-                weight: FontWeight.w600,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
-              const SizedBox(height: 4),
             ],
-
-            // Image or text content
-            if (messageType == MessageType.image && imageUrl != null) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      height: 200,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 200,
-                      color: Colors.grey[300],
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.image_not_supported,
-                            color: Colors.grey[600],
-                            size: 40,
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Failed to load image',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isOwn && senderName != null) ...[
+                CustomText(
+                  text: senderName,
+                  size: 12,
+                  color: ThemeHelper.buttonColor,
+                  fontFamily: 'Inter',
+                  weight: FontWeight.w600,
                 ),
-              ),
-              if (message.isNotEmpty && message != '📷 Image') ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
+              ],
+
+              // Image or text content
+              if (messageType == MessageType.image && imageUrl != null) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        height: 200,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 200,
+                        color: Colors.grey[300],
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.image_not_supported,
+                              color: Colors.grey[600],
+                              size: 40,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Failed to load image',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                if (message.isNotEmpty && message != '📷 Image') ...[
+                  const SizedBox(height: 8),
+                  CustomText(
+                    text: message,
+                    size: 14,
+                    color: isOwn ? Colors.white : ThemeHelper.textColor,
+                    fontFamily: 'Inter',
+                    weight: FontWeight.w400,
+                  ),
+                ],
+              ] else ...[
                 CustomText(
                   text: message,
                   size: 14,
@@ -424,40 +437,32 @@ class ChatWidgets {
                   weight: FontWeight.w400,
                 ),
               ],
-            ] else ...[
-              CustomText(
-                text: message,
-                size: 14,
-                color: isOwn ? Colors.white : ThemeHelper.textColor,
-                fontFamily: 'Inter',
-                weight: FontWeight.w400,
+
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CustomText(
+                    text: _formatMessageTime(timestamp),
+                    size: 10,
+                    color: isOwn
+                        ? Colors.white.withOpacity(0.7)
+                        : ThemeHelper.textColor1,
+                    fontFamily: 'Inter',
+                    weight: FontWeight.w400,
+                  ),
+                  if (isOwn) ...[
+                    const SizedBox(width: 4),
+                    Icon(
+                      isRead ? Icons.done_all : Icons.done,
+                      size: 12,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ],
+                ],
               ),
             ],
-
-            const SizedBox(height: 4),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CustomText(
-                  text: _formatMessageTime(timestamp),
-                  size: 10,
-                  color: isOwn
-                      ? Colors.white.withOpacity(0.7)
-                      : ThemeHelper.textColor1,
-                  fontFamily: 'Inter',
-                  weight: FontWeight.w400,
-                ),
-                if (isOwn) ...[
-                  const SizedBox(width: 4),
-                  Icon(
-                    isRead ? Icons.done_all : Icons.done,
-                    size: 12,
-                    color: Colors.white.withOpacity(0.7),
-                  ),
-                ],
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );

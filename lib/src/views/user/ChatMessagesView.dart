@@ -85,6 +85,15 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
                 );
               }
             });
+          } else if (state is MessageDeleted) {
+            // Message deleted successfully
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Message deleted successfully'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
           } else if (state is ChatError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -289,6 +298,9 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
       senderName: isOwnMessage ? null : message.senderName,
       imageUrl: message.imageUrl,
       messageType: message.type,
+      messageId: message.id,
+      onDelete:
+          isOwnMessage ? () => _showDeleteMessageConfirmation(message) : null,
     );
   }
 
@@ -476,6 +488,42 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
         ),
       );
       return null;
+    }
+  }
+
+  void _showDeleteMessageConfirmation(ChatMessage message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Message'),
+          content: const Text('Are you sure you want to delete this message?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteMessage(message);
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteMessage(ChatMessage message) {
+    if (_currentUserId != null) {
+      context.read<ChatBloc>().add(DeleteMessage(message.id, widget.chatId));
     }
   }
 }

@@ -75,3 +75,13 @@ class ChatDeleted extends ChatState {
   @override
   List<Object?> get props => [chatId];
 }
+
+class MessageDeleted extends ChatState {
+  final String messageId;
+  final String chatId;
+
+  MessageDeleted(this.messageId, this.chatId);
+
+  @override
+  List<Object?> get props => [messageId, chatId];
+}

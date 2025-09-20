@@ -1,11 +1,17 @@
 import 'package:dpr_car_rentals/src/bloc/FeedbackBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/ActivityBloc.dart';
+import 'package:dpr_car_rentals/src/bloc/AdminHomeBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/event/ActivityEvent.dart';
+import 'package:dpr_car_rentals/src/bloc/event/AdminHomeEvent.dart';
 import 'package:dpr_car_rentals/src/bloc/state/ActivityState.dart';
+import 'package:dpr_car_rentals/src/bloc/state/AdminHomeState.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/models/ActivityModel.dart';
 import 'package:dpr_car_rentals/src/repository/FeedbackRepository.dart';
 import 'package:dpr_car_rentals/src/repository/ActivityRepository.dart';
+import 'package:dpr_car_rentals/src/repository/CarRepository.dart';
+import 'package:dpr_car_rentals/src/repository/UserRepository.dart';
+import 'package:dpr_car_rentals/src/repository/ReservationRepository.dart';
 import 'package:dpr_car_rentals/src/views/admin/UserScreen.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/material.dart';
@@ -29,71 +35,80 @@ class _AdminHomeViewState extends State<AdminHomeView> {
           create: (context) => ActivityBloc(ActivityRepositoryImpl())
             ..add(LoadRecentActivities(limit: 10)),
         ),
+        BlocProvider<AdminHomeBloc>(
+          create: (context) => AdminHomeBloc(
+            CarRepositoryImpl(),
+            UserRepositoryImpl(),
+            ReservationRepositoryImpl(),
+            FeedbackRepositoryImpl(),
+          )..add(LoadStatistics()),
+        ),
       ],
       child: Scaffold(
-      backgroundColor: ThemeHelper.backgroundColor,
-      appBar: AppBar(
-        title: CustomText(
-          text: 'Admin Dashboard',
-          size: 20,
-          color: Colors.white,
-          fontFamily: 'Inter',
-          weight: FontWeight.w700,
-        ),
-        elevation: 0,
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              // TODO: Show notifications
-            },
+        backgroundColor: ThemeHelper.backgroundColor,
+        appBar: AppBar(
+          title: CustomText(
+            text: 'Admin Dashboard',
+            size: 20,
+            color: Colors.white,
+            fontFamily: 'Inter',
+            weight: FontWeight.w700,
           ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // TODO: Show settings
-            },
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Welcome Section
-                _buildWelcomeSection(),
-
-                const SizedBox(height: 24),
-
-                // Statistics Cards
-                _buildStatisticsCards(),
-
-                const SizedBox(height: 32),
-
-                // Quick Actions
-                _buildQuickActions(),
-
-                const SizedBox(height: 32),
-
-                // Recent Activities
-                _buildRecentActivities(),
-
-                const SizedBox(height: 32),
-
-                // Charts Section (Placeholder)
-                _buildChartsSection(),
-              ],
+          elevation: 0,
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.notifications),
+              onPressed: () {
+                // TODO: Show notifications
+              },
             ),
-          ),        ),
-      ),
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                // TODO: Show settings
+              },
+            ),
+          ],
         ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Welcome Section
+                  _buildWelcomeSection(),
+
+                  const SizedBox(height: 24),
+
+                  // Statistics Cards
+                  _buildStatisticsCards(),
+
+                  const SizedBox(height: 32),
+
+                  // Quick Actions
+                  _buildQuickActions(),
+
+                  const SizedBox(height: 32),
+
+                  // Recent Activities
+                  _buildRecentActivities(),
+
+                  const SizedBox(height: 32),
+
+                  // Charts Section (Placeholder)
+                  _buildChartsSection(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
-      }
+  }
 
   Widget _buildWelcomeSection() {
     return Container(
@@ -169,56 +184,95 @@ class _AdminHomeViewState extends State<AdminHomeView> {
           weight: FontWeight.w600,
         ),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.directions_car,
-                title: 'Total Cars',
-                value: '247',
-                change: '+12%',
-                changeColor: Colors.green,
-                color: Colors.blue,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.people,
-                title: 'Active Users',
-                value: '1,543',
-                change: '+8%',
-                changeColor: Colors.green,
-                color: Colors.green,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.book_online,
-                title: 'Bookings',
-                value: '89',
-                change: '+15%',
-                changeColor: Colors.green,
-                color: Colors.orange,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.star,
-                title: 'Avg Rating',
-                value: '4.8',
-                change: '+0.2',
-                changeColor: Colors.green,
-                color: Colors.purple,
-              ),
-            ),
-          ],
+        BlocBuilder<AdminHomeBloc, AdminHomeState>(
+          builder: (context, state) {
+            if (state is AdminHomeLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is AdminHomeLoaded) {
+              final stats = state.statistics;
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          icon: Icons.directions_car,
+                          title: 'Total Cars',
+                          value: stats.totalCars.toString(),
+                          change: '+12%',
+                          changeColor: Colors.green,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatCard(
+                          icon: Icons.people,
+                          title: 'Total Users',
+                          value: stats.totalUsers.toString(),
+                          change: '+8%',
+                          changeColor: Colors.green,
+                          color: Colors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          icon: Icons.book_online,
+                          title: 'Bookings',
+                          value: stats.totalBookings.toString(),
+                          change: '+15%',
+                          changeColor: Colors.green,
+                          color: Colors.orange,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatCard(
+                          icon: Icons.star,
+                          title: 'Total Ratings',
+                          value: stats.totalRatings.toStringAsFixed(1),
+                          change: '+0.2',
+                          changeColor: Colors.green,
+                          color: Colors.purple,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            } else if (state is AdminHomeError) {
+              return Center(
+                child: Column(
+                  children: [
+                    const Icon(Icons.error, color: Colors.red, size: 48),
+                    const SizedBox(height: 8),
+                    CustomText(
+                      text: 'Error loading statistics',
+                      size: 16,
+                      color: Colors.red,
+                      fontFamily: 'Inter',
+                      weight: FontWeight.w500,
+                    ),
+                    const SizedBox(height: 4),
+                    CustomText(
+                      text: state.message,
+                      size: 12,
+                      color: ThemeHelper.textColor1,
+                      fontFamily: 'Inter',
+                      weight: FontWeight.w400,
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          },
         ),
       ],
     );
@@ -362,8 +416,8 @@ class _AdminHomeViewState extends State<AdminHomeView> {
           ],
         ),
       ],
-);
-}
+    );
+  }
 
   Widget _buildActionCard({
     required IconData icon,
@@ -419,10 +473,10 @@ class _AdminHomeViewState extends State<AdminHomeView> {
               weight: FontWeight.w400,
             ),
           ],
+        ),
       ),
-      ),
-);
-}
+    );
+  }
 
   Widget _buildRecentActivities() {
     return Column(

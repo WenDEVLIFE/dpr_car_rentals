@@ -406,33 +406,6 @@ class _UserHomeViewState extends State<UserHomeView> {
           ],
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.location_on,
-                title: 'Pickup Points',
-                subtitle: 'Find nearby locations',
-                color: Colors.orange,
-                onTap: () {
-                  // TODO: Navigate to locations screen
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.support_agent,
-                title: 'Support',
-                subtitle: 'Get help & support',
-                color: Colors.green,
-                onTap: () {
-                  // TODO: Navigate to support screen
-                },
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }

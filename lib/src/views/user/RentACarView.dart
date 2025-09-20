@@ -2,14 +2,19 @@ import 'dart:async';
 import 'package:dpr_car_rentals/src/bloc/UserHomeBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/event/UserHomeEvent.dart';
 import 'package:dpr_car_rentals/src/bloc/state/UserHomeState.dart';
+import 'package:dpr_car_rentals/src/bloc/ChatBloc.dart';
+import 'package:dpr_car_rentals/src/bloc/event/ChatEvent.dart';
+import 'package:dpr_car_rentals/src/bloc/state/ChatState.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/models/CarModel.dart';
 import 'package:dpr_car_rentals/src/repository/ReservationRepository.dart';
 import 'package:dpr_car_rentals/src/views/user/BookCarView.dart';
+import 'package:dpr_car_rentals/src/views/user/ChatMessagesView.dart';
 import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/ImageZoomView.dart';
 import 'package:dpr_car_rentals/src/widget/CarDisplayWidgets.dart';
+import 'package:dpr_car_rentals/src/widget/ChatWidgets.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -87,6 +92,36 @@ class _RentACarViewState extends State<RentACarView> {
     }
   }
 
+  Future<void> _navigateToChat(CarModel car) async {
+    // Check if user is logged in
+    final currentUser = _auth.currentUser;
+    if (currentUser == null) {
+      _showToast('Please login to chat with the owner');
+      return;
+    }
+
+    try {
+      // Start chat with owner using ChatBloc
+      context.read<ChatBloc>().add(StartChatWithOwner(
+            ownerId: car.ownerId,
+            carId: car.id,
+            carName: '${car.name} ${car.model}',
+          ));
+
+      // Show loading toast
+      _showToast('Starting chat with owner...');
+    } catch (e) {
+      _showToast('Failed to start chat: $e');
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    screenWidth = MediaQuery.of(context).size.width;
+    screenHeight = MediaQuery.of(context).size.height;
+  }
+
   void _showToast(String message) {
     Fluttertoast.showToast(
       msg: message,
@@ -98,14 +133,33 @@ class _RentACarViewState extends State<RentACarView> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    screenWidth = MediaQuery.of(context).size.width;
-    screenHeight = MediaQuery.of(context).size.height;
+  Widget build(BuildContext context) {
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ChatBloc, ChatState>(
+          listener: (context, state) {
+            if (state is ChatWithOwnerStarted) {
+              // Navigate to chat messages
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatMessagesView(
+                    chatId: state.chatId,
+                    conversation: null, // Will be loaded in the view
+                  ),
+                ),
+              );
+            } else if (state is ChatError) {
+              _showToast(state.message);
+            }
+          },
+        ),
+      ],
+      child: _buildMainContent(),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildMainContent() {
     return Scaffold(
       backgroundColor: ThemeHelper.backgroundColor,
       appBar: AppBar(
@@ -425,14 +479,13 @@ class _RentACarViewState extends State<RentACarView> {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: CustomButton(
-                            text: 'Chat Owner',
-                            textColor: Colors.white,
-                            backgroundColor: Colors.green,
-                            onPressed: () {
+                          child: ChatWidgets.chatWithOwnerButton(
+                            onPressed: () async {
                               Navigator.of(context).pop();
-                              // TODO: Navigate to chat with owner
+                              await _navigateToChat(car);
                             },
+                            text: 'Chat Owner',
+                            backgroundColor: Colors.green,
                           ),
                         ),
                       ],

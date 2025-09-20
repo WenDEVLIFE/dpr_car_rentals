@@ -1,17 +1,27 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../helpers/SessionHelpers.dart';
+import '../repository/ChatRepository.dart';
+import '../models/ChatModel.dart';
 import 'event/ChatEvent.dart';
 import 'state/ChatState.dart';
+import 'dart:async';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final SessionHelpers sessionHelpers;
+  final ChatRepositoryImpl _chatRepository;
 
-  ChatBloc(this.sessionHelpers) : super(ChatInitial()) {
+  String? _currentUserId;
+
+  ChatBloc(this.sessionHelpers)
+      : _chatRepository = ChatRepositoryImpl(),
+        super(ChatInitial()) {
     on<LoadChats>(_onLoadChats);
     on<LoadMessages>(_onLoadMessages);
     on<SendMessage>(_onSendMessage);
     on<SearchChats>(_onSearchChats);
     on<CreateChat>(_onCreateChat);
+    on<StartChatWithOwner>(_onStartChatWithOwner);
+    on<MarkMessagesAsRead>(_onMarkMessagesAsRead);
   }
 
   void _onLoadChats(LoadChats event, Emitter<ChatState> emit) async {
@@ -19,57 +29,109 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     try {
       // Get current user
       final userInfo = await sessionHelpers.getUserInfo();
-      if (userInfo == null) {
+      if (userInfo == null || userInfo['uid'] == null) {
         emit(ChatError('User not logged in'));
         return;
       }
 
-      // Load chats (placeholder data for now)
-      final chats = _getMockChats(userInfo['role'] ?? 'user');
-      emit(ChatsLoaded(chats, chats));
+      _currentUserId = userInfo['uid'] as String;
+
+      // Cancel previous subscription
+      // No longer needed with emit.forEach
+
+      // Use emit.forEach to properly handle the stream
+      await emit.forEach<List<ChatConversation>>(
+        _chatRepository.getUserChats(_currentUserId!),
+        onData: (chats) => ChatsLoaded(chats, chats),
+        onError: (error, stackTrace) => ChatError('Failed to load chats: $error'),
+      );
     } catch (e) {
-      emit(ChatError('Failed to load chats: $e'));
+      if (!emit.isDone) {
+        emit(ChatError('Failed to load chats: $e'));
+      }
     }
   }
 
   void _onLoadMessages(LoadMessages event, Emitter<ChatState> emit) async {
     emit(ChatLoading());
     try {
-      // Load messages for specific chat (placeholder data for now)
-      final messages = _getMockMessages(event.chatId);
-      final conversation = _getMockConversation(event.chatId);
-
-      if (conversation != null) {
-        emit(MessagesLoaded(messages, conversation));
-      } else {
-        emit(ChatError('Conversation not found'));
+      // Get conversation details first
+      // No longer need to cancel subscription with emit.forEach
+      final userInfo = await sessionHelpers.getUserInfo();
+      if (userInfo == null) {
+        emit(ChatError('User not logged in'));
+        return;
       }
+
+      _currentUserId = userInfo['uid'] as String;
+
+      // Get the conversation data once
+      final conversation = await _getMockConversation(event.chatId);
+      if (conversation == null) {
+        emit(ChatError('Conversation not found'));
+        return;
+      }
+
+      // Use emit.forEach to properly handle the stream
+      await emit.forEach<List<ChatMessage>>(
+        _chatRepository.getChatMessages(event.chatId),
+        onData: (messages) {
+          // Handle marking messages as read asynchronously without blocking
+          if (messages.isNotEmpty) {
+            _chatRepository.markMessagesAsRead(event.chatId, _currentUserId!)
+                .catchError((error) => print('Error marking messages as read: $error'));
+          }
+          return MessagesLoaded(messages, conversation);
+        },
+        onError: (error, stackTrace) => ChatError('Failed to load messages: $error'),
+      );
     } catch (e) {
-      emit(ChatError('Failed to load messages: $e'));
+      if (!emit.isDone) {
+        emit(ChatError('Failed to load messages: $e'));
+      }
     }
   }
 
   void _onSendMessage(SendMessage event, Emitter<ChatState> emit) async {
     try {
+      final userInfo = await sessionHelpers.getUserInfo();
+      if (userInfo == null) {
+        emit(ChatError('User not logged in'));
+        return;
+      }
+
+      final currentUserId = userInfo['uid'] as String;
+      final currentUserName =
+          userInfo['fullName'] ?? userInfo['name'] ?? 'User';
+      final currentUserRole = userInfo['role'] ?? 'user';
+
       // Create new message
       final newMessage = ChatMessage(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: '', // Will be set by Firestore
         chatId: event.chatId,
-        senderId: event.senderId,
-        senderName: 'You', // This would come from user data
+        senderId: currentUserId,
+        senderName: currentUserName,
+        senderRole: currentUserRole,
         message: event.message,
         timestamp: DateTime.now(),
         isRead: false,
+        type: event.type,
+        imageUrl: event.imageUrl,
+        fileName: event.fileName,
       );
 
-      // In a real app, this would send to backend
-      // For now, just emit success
-      emit(MessageSent(newMessage));
+      // Send message to repository
+      final messageId = await _chatRepository.sendMessage(newMessage);
 
-      // Reload messages to show the new message
-      add(LoadMessages(event.chatId));
+      if (!emit.isDone) {
+        emit(MessageSent(newMessage.copyWith(id: messageId)));
+      }
+
+      // Messages will be updated automatically through the stream
     } catch (e) {
-      emit(ChatError('Failed to send message: $e'));
+      if (!emit.isDone) {
+        emit(ChatError('Failed to send message: $e'));
+      }
     }
   }
 
@@ -78,160 +140,148 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       final currentState = state as ChatsLoaded;
       final query = event.query.toLowerCase();
 
+      if (query.isEmpty) {
+        if (!emit.isDone) {
+          emit(ChatsLoaded(currentState.chats, currentState.chats));
+        }
+        return;
+      }
+
       final filteredChats = currentState.chats.where((chat) {
-        return chat.participantName.toLowerCase().contains(query) ||
-            chat.lastMessage.toLowerCase().contains(query);
+        final currentUserId = _currentUserId ?? '';
+        final participantName =
+            chat.getOtherParticipantName(currentUserId).toLowerCase();
+        final lastMessage = chat.lastMessage.toLowerCase();
+        final carName = chat.carName?.toLowerCase() ?? '';
+
+        return participantName.contains(query) ||
+            lastMessage.contains(query) ||
+            carName.contains(query);
       }).toList();
 
-      emit(ChatsLoaded(currentState.chats, filteredChats));
+      if (!emit.isDone) {
+        emit(ChatsLoaded(currentState.chats, filteredChats));
+      }
     }
   }
 
   void _onCreateChat(CreateChat event, Emitter<ChatState> emit) async {
     try {
-      // Create new chat conversation
-      final newChat = ChatConversation(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        participantId: event.recipientId,
-        participantName: event.recipientName,
-        participantAvatar: '👤',
-        lastMessage: 'Chat started',
-        lastMessageTime: DateTime.now(),
-        unreadCount: 0,
-        isOnline: true,
+      final userInfo = await sessionHelpers.getUserInfo();
+      if (userInfo == null) {
+        emit(ChatError('User not logged in'));
+        return;
+      }
+
+      final currentUserId = userInfo['uid'] as String;
+      final currentUserName =
+          userInfo['fullName'] ?? userInfo['name'] ?? 'User';
+      final currentUserRole = userInfo['role'] ?? 'user';
+
+      // Create new chat
+      final chatId = await _chatRepository.createChat(
+        currentUserId,
+        currentUserName,
+        currentUserRole,
+        event.params,
       );
 
-      // In a real app, this would save to backend
-      // For now, just reload chats
-      add(LoadChats());
+      // Create conversation object for immediate response
+      final conversation = ChatConversation(
+        id: chatId,
+        participantIds: [currentUserId, event.params.recipientId],
+        participantNames: {
+          currentUserId: currentUserName,
+          event.params.recipientId: event.params.recipientName,
+        },
+        participantRoles: {
+          currentUserId: currentUserRole,
+          event.params.recipientId: event.params.recipientRole,
+        },
+        carId: event.params.carId,
+        carName: event.params.carName,
+        type: event.params.type,
+        lastMessage: 'Chat started',
+        lastMessageTime: DateTime.now(),
+        lastMessageSenderId: currentUserId,
+        unreadCounts: {currentUserId: 0, event.params.recipientId: 1},
+        createdAt: DateTime.now(),
+        isActive: true,
+      );
+
+      if (!emit.isDone) {
+        emit(ChatCreated(chatId, conversation));
+      }
+
+      // Chats will be updated automatically through the stream
     } catch (e) {
-      emit(ChatError('Failed to create chat: $e'));
+      if (!emit.isDone) {
+        emit(ChatError('Failed to create chat: $e'));
+      }
     }
   }
 
-  // Mock data methods - replace with actual API calls when backend is ready
-  List<ChatConversation> _getMockChats(String userRole) {
-    if (userRole == 'admin') {
-      return [
-        ChatConversation(
-          id: '1',
-          participantId: 'user1',
-          participantName: 'John Doe',
-          participantAvatar: '👨',
-          lastMessage: 'Thank you for the quick response!',
-          lastMessageTime: DateTime.now().subtract(const Duration(minutes: 5)),
-          unreadCount: 2,
-          isOnline: true,
-        ),
-        ChatConversation(
-          id: '2',
-          participantId: 'user2',
-          participantName: 'Jane Smith',
-          participantAvatar: '👩',
-          lastMessage: 'When will my car be ready?',
-          lastMessageTime: DateTime.now().subtract(const Duration(hours: 1)),
-          unreadCount: 0,
-          isOnline: false,
-        ),
-        ChatConversation(
-          id: '3',
-          participantId: 'owner1',
-          participantName: 'Mike Johnson',
-          participantAvatar: '👨‍💼',
-          lastMessage: 'Fleet maintenance schedule updated',
-          lastMessageTime: DateTime.now().subtract(const Duration(hours: 2)),
-          unreadCount: 1,
-          isOnline: true,
-        ),
-      ];
-    } else {
-      // User chats
-      return [
-        ChatConversation(
-          id: '1',
-          participantId: 'admin1',
-          participantName: 'DPR Support',
-          participantAvatar: '🚗',
-          lastMessage: 'Your booking has been confirmed!',
-          lastMessageTime: DateTime.now().subtract(const Duration(minutes: 30)),
-          unreadCount: 1,
-          isOnline: true,
-        ),
-        ChatConversation(
-          id: '2',
-          participantId: 'owner1',
-          participantName: 'Premium Cars Owner',
-          participantAvatar: '🏢',
-          lastMessage: 'Welcome to our premium fleet!',
-          lastMessageTime: DateTime.now().subtract(const Duration(hours: 3)),
-          unreadCount: 0,
-          isOnline: false,
-        ),
-      ];
+  void _onStartChatWithOwner(
+      StartChatWithOwner event, Emitter<ChatState> emit) async {
+    try {
+      final userInfo = await sessionHelpers.getUserInfo();
+      if (userInfo == null) {
+        if (!emit.isDone) {
+          emit(ChatError('User not logged in'));
+        }
+        return;
+      }
+
+      final currentUserId = userInfo['uid'] as String;
+
+      // Start chat with owner using repository helper method
+      final chatId = await _chatRepository.startChatWithOwner(
+        currentUserId,
+        event.ownerId,
+        event.carId,
+        event.carName,
+      );
+
+      if (!emit.isDone) {
+        emit(ChatWithOwnerStarted(chatId));
+      }
+    } catch (e) {
+      if (!emit.isDone) {
+        emit(ChatError('Failed to start chat with owner: $e'));
+      }
     }
   }
 
-  List<ChatMessage> _getMockMessages(String chatId) {
-    // Mock messages based on chat ID
-    switch (chatId) {
-      case '1':
-        return [
-          ChatMessage(
-            id: '1',
-            chatId: chatId,
-            senderId: 'admin1',
-            senderName: 'DPR Support',
-            message: 'Hello! How can we help you today?',
-            timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-            isRead: true,
-          ),
-          ChatMessage(
-            id: '2',
-            chatId: chatId,
-            senderId: 'user1',
-            senderName: 'You',
-            message: 'I have a question about my booking.',
-            timestamp:
-                DateTime.now().subtract(const Duration(hours: 1, minutes: 45)),
-            isRead: true,
-          ),
-          ChatMessage(
-            id: '3',
-            chatId: chatId,
-            senderId: 'admin1',
-            senderName: 'DPR Support',
-            message:
-                'Your booking has been confirmed! You can pick up your Toyota Camry tomorrow at 9 AM.',
-            timestamp: DateTime.now().subtract(const Duration(minutes: 30)),
-            isRead: false,
-          ),
-        ];
-      default:
-        return [
-          ChatMessage(
-            id: '1',
-            chatId: chatId,
-            senderId: 'other',
-            senderName: 'Support',
-            message: 'Welcome to DPR Car Rentals chat!',
-            timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-            isRead: true,
-          ),
-        ];
+  void _onMarkMessagesAsRead(
+      MarkMessagesAsRead event, Emitter<ChatState> emit) async {
+    try {
+      final userInfo = await sessionHelpers.getUserInfo();
+      if (userInfo == null) return;
+
+      final currentUserId = userInfo['uid'] as String;
+      await _chatRepository.markMessagesAsRead(event.chatId, currentUserId);
+    } catch (e) {
+      print('Error marking messages as read: $e');
+      // Don't emit error for this as it's not critical
     }
   }
 
-  ChatConversation? _getMockConversation(String chatId) {
-    // Return mock conversation data
+  // Temporary helper method - replace with actual data fetching
+  Future<ChatConversation?> _getMockConversation(String chatId) async {
+    // In a real implementation, fetch this from Firestore
+    // For now, return a mock conversation
     return ChatConversation(
       id: chatId,
-      participantId: 'participant_$chatId',
-      participantName: 'Chat Participant',
-      participantAvatar: '👤',
+      participantIds: ['current_user', 'other_user'],
+      participantNames: {'current_user': 'You', 'other_user': 'Support'},
+      participantRoles: {'current_user': 'user', 'other_user': 'admin'},
+      type: ChatType.userSupport,
       lastMessage: 'Last message',
       lastMessageTime: DateTime.now(),
-      unreadCount: 0,
-      isOnline: true,
+      lastMessageSenderId: 'other_user',
+      unreadCounts: {'current_user': 0, 'other_user': 0},
+      createdAt: DateTime.now(),
+      isActive: true,
     );
   }
 }

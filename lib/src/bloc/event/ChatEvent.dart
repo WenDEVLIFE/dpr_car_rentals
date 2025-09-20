@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../models/ChatModel.dart';
 
 abstract class ChatEvent extends Equatable {
   @override
@@ -20,15 +21,22 @@ class SendMessage extends ChatEvent {
   final String chatId;
   final String message;
   final String senderId;
+  final MessageType type;
+  final String? imageUrl;
+  final String? fileName;
 
   SendMessage({
     required this.chatId,
     required this.message,
     required this.senderId,
+    this.type = MessageType.text,
+    this.imageUrl,
+    this.fileName,
   });
 
   @override
-  List<Object?> get props => [chatId, message, senderId];
+  List<Object?> get props =>
+      [chatId, message, senderId, type, imageUrl, fileName];
 }
 
 class SearchChats extends ChatEvent {
@@ -41,14 +49,34 @@ class SearchChats extends ChatEvent {
 }
 
 class CreateChat extends ChatEvent {
-  final String recipientId;
-  final String recipientName;
+  final CreateChatParams params;
 
-  CreateChat({
-    required this.recipientId,
-    required this.recipientName,
+  CreateChat(this.params);
+
+  @override
+  List<Object?> get props => [params];
+}
+
+class StartChatWithOwner extends ChatEvent {
+  final String ownerId;
+  final String carId;
+  final String carName;
+
+  StartChatWithOwner({
+    required this.ownerId,
+    required this.carId,
+    required this.carName,
   });
 
   @override
-  List<Object?> get props => [recipientId, recipientName];
+  List<Object?> get props => [ownerId, carId, carName];
+}
+
+class MarkMessagesAsRead extends ChatEvent {
+  final String chatId;
+
+  MarkMessagesAsRead(this.chatId);
+
+  @override
+  List<Object?> get props => [chatId];
 }

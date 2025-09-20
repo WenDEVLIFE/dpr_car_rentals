@@ -1,10 +1,13 @@
 import 'package:dpr_car_rentals/src/bloc/ChatBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/event/ChatEvent.dart';
 import 'package:dpr_car_rentals/src/bloc/state/ChatState.dart';
+import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
+import 'package:dpr_car_rentals/src/models/ChatModel.dart';
 import 'package:dpr_car_rentals/src/views/user/ChatMessagesView.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/ModernSearchBar.dart';
+import 'package:dpr_car_rentals/src/widget/ChatWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -18,11 +21,24 @@ class ChatView extends StatefulWidget {
 
 class _ChatViewState extends State<ChatView> {
   final TextEditingController _searchController = TextEditingController();
+  final SessionHelpers _sessionHelpers = SessionHelpers();
   bool _hasInitialized = false;
+  String? _currentUserId;
 
   @override
   void initState() {
     super.initState();
+    _initializeUser();
+  }
+
+  Future<void> _initializeUser() async {
+    final userInfo = await _sessionHelpers.getUserInfo();
+    if (userInfo != null && userInfo['uid'] != null) {
+      setState(() {
+        _currentUserId = userInfo['uid'] as String;
+      });
+    }
+
     // Load chats when view initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_hasInitialized) {
@@ -161,8 +177,11 @@ class _ChatViewState extends State<ChatView> {
           // Conversations List
           Expanded(
             child: chats.isEmpty
-                ? const Center(
-                    child: Text('No conversations found'),
+                ? ChatWidgets.emptyChatState(
+                    title: 'No conversations yet',
+                    subtitle:
+                        'Start chatting with car owners to get support and ask questions about rentals.',
+                    icon: Icons.chat_bubble_outline,
                   )
                 : ListView.builder(
                     itemCount: chats.length,
@@ -178,8 +197,20 @@ class _ChatViewState extends State<ChatView> {
   }
 
   Widget _buildConversationItem(ChatConversation chat) {
-    return GestureDetector(
+    if (_currentUserId == null) return const SizedBox.shrink();
+
+    return ChatWidgets.chatPreviewCard(
+      participantName: chat.getOtherParticipantName(_currentUserId!),
+      participantRole: chat.getOtherParticipantRole(_currentUserId!),
+      lastMessage: chat.lastMessage,
+      lastMessageTime: chat.lastMessageTime,
+      unreadCount: chat.getUnreadCount(_currentUserId!),
+      isOnline: true, // You can implement real online status later
+      carName: chat.carName,
       onTap: () {
+        // Mark messages as read when opening chat
+        context.read<ChatBloc>().add(MarkMessagesAsRead(chat.id));
+
         Navigator.of(context).push(
           MaterialPageRoute(
             fullscreenDialog: true,
@@ -190,132 +221,6 @@ class _ChatViewState extends State<ChatView> {
           ),
         );
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            bottom: BorderSide(
-              color: ThemeHelper.borderColor.withOpacity(0.3),
-              width: 1,
-            ),
-          ),
-        ),
-        child: Row(
-          children: [
-            // Avatar
-            Stack(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: ThemeHelper.accentColor,
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Center(
-                    child: Text(
-                      chat.participantAvatar,
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                  ),
-                ),
-                if (chat.isOnline)
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-
-            const SizedBox(width: 12),
-
-            // Chat Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CustomText(
-                        text: chat.participantName,
-                        size: 16,
-                        color: ThemeHelper.textColor,
-                        fontFamily: 'Inter',
-                        weight: FontWeight.w600,
-                      ),
-                      CustomText(
-                        text: _formatTime(chat.lastMessageTime),
-                        size: 12,
-                        color: ThemeHelper.textColor1,
-                        fontFamily: 'Inter',
-                        weight: FontWeight.w400,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    chat.lastMessage,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: ThemeHelper.textColor1,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w400,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-
-            // Unread Count
-            if (chat.unreadCount > 0)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: ThemeHelper.buttonColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: CustomText(
-                  text: chat.unreadCount.toString(),
-                  size: 12,
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  weight: FontWeight.w600,
-                ),
-              ),
-          ],
-        ),
-      ),
     );
-  }
-
-  String _formatTime(DateTime time) {
-    final now = DateTime.now();
-    final difference = now.difference(time);
-
-    if (difference.inDays == 0) {
-      return DateFormat('HH:mm').format(time);
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return DateFormat('EEEE').format(time);
-    } else {
-      return DateFormat('MM/dd').format(time);
-    }
   }
 }

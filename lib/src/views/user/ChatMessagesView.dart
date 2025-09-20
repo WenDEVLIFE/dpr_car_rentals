@@ -1,20 +1,23 @@
 import 'package:dpr_car_rentals/src/bloc/ChatBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/event/ChatEvent.dart';
 import 'package:dpr_car_rentals/src/bloc/state/ChatState.dart';
+import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
+import 'package:dpr_car_rentals/src/models/ChatModel.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
+import 'package:dpr_car_rentals/src/widget/ChatWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class ChatMessagesView extends StatefulWidget {
   final String chatId;
-  final ChatConversation conversation;
+  final ChatConversation? conversation;
 
   const ChatMessagesView({
     super.key,
     required this.chatId,
-    required this.conversation,
+    this.conversation,
   });
 
   @override
@@ -24,12 +27,28 @@ class ChatMessagesView extends StatefulWidget {
 class _ChatMessagesViewState extends State<ChatMessagesView> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final SessionHelpers _sessionHelpers = SessionHelpers();
+  String? _currentUserId;
+  String? _currentUserName;
+  ChatConversation? _conversation;
 
   @override
   void initState() {
     super.initState();
+    _initializeUser();
+    _conversation = widget.conversation;
     // Load messages for this chat
     context.read<ChatBloc>().add(LoadMessages(widget.chatId));
+  }
+
+  Future<void> _initializeUser() async {
+    final userInfo = await _sessionHelpers.getUserInfo();
+    if (userInfo != null) {
+      setState(() {
+        _currentUserId = userInfo['uid'] as String?;
+        _currentUserName = userInfo['fullName'] ?? userInfo['name'] ?? 'You';
+      });
+    }
   }
 
   @override
@@ -43,60 +62,7 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ThemeHelper.backgroundColor,
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: ThemeHelper.accentColor,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Center(
-                child: Text(
-                  widget.conversation.participantAvatar,
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomText(
-                    text: widget.conversation.participantName,
-                    size: 16,
-                    color: Colors.white,
-                    fontFamily: 'Inter',
-                    weight: FontWeight.w600,
-                  ),
-                  if (widget.conversation.isOnline)
-                    CustomText(
-                      text: 'Online',
-                      size: 12,
-                      color: Colors.white.withOpacity(0.7),
-                      fontFamily: 'Inter',
-                      weight: FontWeight.w400,
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        elevation: 0,
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              // TODO: Show chat options menu
-            },
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(),
       body: BlocBuilder<ChatBloc, ChatState>(
         builder: (context, state) {
           if (state is ChatLoading) {
@@ -106,45 +72,12 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
           }
 
           if (state is ChatError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red,
-                  ),
-                  const SizedBox(height: 16),
-                  CustomText(
-                    text: 'Error loading messages',
-                    size: 18,
-                    color: ThemeHelper.textColor,
-                    fontFamily: 'Inter',
-                    weight: FontWeight.w500,
-                  ),
-                  const SizedBox(height: 8),
-                  CustomText(
-                    text: state.message,
-                    size: 14,
-                    color: ThemeHelper.textColor1,
-                    fontFamily: 'Inter',
-                    weight: FontWeight.w400,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<ChatBloc>().add(LoadMessages(widget.chatId));
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
+            return _buildErrorView(state.message);
           }
 
           if (state is MessagesLoaded) {
             final messages = state.messages;
+            _conversation = state.conversation;
 
             // Scroll to bottom when new messages arrive
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -162,8 +95,10 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
                 // Messages List
                 Expanded(
                   child: messages.isEmpty
-                      ? const Center(
-                          child: Text('No messages yet'),
+                      ? ChatWidgets.emptyChatState(
+                          title: 'Start the conversation',
+                          subtitle: 'Send a message to begin chatting.',
+                          icon: Icons.chat,
                         )
                       : ListView.builder(
                           controller: _scrollController,
@@ -190,74 +125,122 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
     );
   }
 
-  Widget _buildMessageItem(ChatMessage message) {
-    final isOwnMessage =
-        message.senderId == 'user1'; // TODO: Get from current user
+  PreferredSizeWidget _buildAppBar() {
+    String title = 'Chat';
+    String subtitle = '';
+    String emoji = '👤';
 
-    return Align(
-      alignment: isOwnMessage ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
-        decoration: BoxDecoration(
-          color: isOwnMessage ? ThemeHelper.buttonColor : Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: isOwnMessage
-                ? const Radius.circular(16)
-                : const Radius.circular(4),
-            bottomRight: isOwnMessage
-                ? const Radius.circular(4)
-                : const Radius.circular(16),
+    if (_conversation != null && _currentUserId != null) {
+      title = _conversation!.getDisplayTitle(_currentUserId!);
+      subtitle = 'Tap for more info';
+      emoji = _conversation!.getAvatarEmoji(_currentUserId!);
+    }
+
+    return AppBar(
+      title: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: ThemeHelper.accentColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Center(
+              child: Text(
+                emoji,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CustomText(
-              text: message.message,
-              size: 14,
-              color: isOwnMessage ? Colors.white : ThemeHelper.textColor,
-              fontFamily: 'Inter',
-              weight: FontWeight.w400,
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisSize: MainAxisSize.min,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CustomText(
-                  text: _formatMessageTime(message.timestamp),
-                  size: 10,
-                  color: isOwnMessage
-                      ? Colors.white.withOpacity(0.7)
-                      : ThemeHelper.textColor1,
+                  text: title,
+                  size: 16,
+                  color: Colors.white,
                   fontFamily: 'Inter',
-                  weight: FontWeight.w400,
+                  weight: FontWeight.w600,
                 ),
-                if (isOwnMessage) ...[
-                  const SizedBox(width: 8),
-                  Icon(
-                    message.isRead ? Icons.done_all : Icons.done,
+                if (subtitle.isNotEmpty)
+                  CustomText(
+                    text: subtitle,
                     size: 12,
                     color: Colors.white.withOpacity(0.7),
+                    fontFamily: 'Inter',
+                    weight: FontWeight.w400,
                   ),
-                ],
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+      elevation: 0,
+      backgroundColor: Colors.blue,
+      foregroundColor: Colors.white,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.more_vert),
+          onPressed: () {
+            // TODO: Show chat options menu
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorView(String errorMessage) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.error_outline,
+            size: 64,
+            color: Colors.red,
+          ),
+          const SizedBox(height: 16),
+          CustomText(
+            text: 'Error loading messages',
+            size: 18,
+            color: ThemeHelper.textColor,
+            fontFamily: 'Inter',
+            weight: FontWeight.w500,
+          ),
+          const SizedBox(height: 8),
+          CustomText(
+            text: errorMessage,
+            size: 14,
+            color: ThemeHelper.textColor1,
+            fontFamily: 'Inter',
+            weight: FontWeight.w400,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              context.read<ChatBloc>().add(LoadMessages(widget.chatId));
+            },
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageItem(ChatMessage message) {
+    if (_currentUserId == null) return const SizedBox.shrink();
+
+    final isOwnMessage = message.senderId == _currentUserId;
+
+    return ChatWidgets.messageBubble(
+      message: message.message,
+      isOwn: isOwnMessage,
+      timestamp: message.timestamp,
+      isRead: message.isRead,
+      senderName: isOwnMessage ? null : message.senderName,
     );
   }
 
@@ -340,17 +323,13 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
   }
 
   void _sendMessage() {
-    if (_messageController.text.trim().isNotEmpty) {
+    if (_messageController.text.trim().isNotEmpty && _currentUserId != null) {
       context.read<ChatBloc>().add(SendMessage(
             chatId: widget.chatId,
             message: _messageController.text.trim(),
-            senderId: 'user1', // TODO: Get from current user
+            senderId: _currentUserId!,
           ));
       _messageController.clear();
     }
-  }
-
-  String _formatMessageTime(DateTime time) {
-    return DateFormat('HH:mm').format(time);
   }
 }

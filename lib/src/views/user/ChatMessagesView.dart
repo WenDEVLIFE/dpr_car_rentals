@@ -46,8 +46,10 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
     if (userInfo != null) {
       setState(() {
         _currentUserId = userInfo['uid'] as String?;
-        _currentUserName = userInfo['fullName'] ?? userInfo['name'] ?? 'You';
       });
+      print('👤 ChatMessagesView - Current User ID set to: $_currentUserId');
+    } else {
+      print('❌ ChatMessagesView - Failed to get user info');
     }
   }
 
@@ -63,7 +65,34 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
     return Scaffold(
       backgroundColor: ThemeHelper.backgroundColor,
       appBar: _buildAppBar(),
-      body: BlocBuilder<ChatBloc, ChatState>(
+      body: BlocConsumer<ChatBloc, ChatState>(
+        listener: (context, state) {
+          if (state is MessageSent) {
+            // Message sent successfully - scroll to bottom
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (_scrollController.hasClients) {
+                _scrollController.animateTo(
+                  _scrollController.position.maxScrollExtent,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                );
+              }
+            });
+          } else if (state is ChatError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        buildWhen: (previous, current) {
+          // Only rebuild for states relevant to this view
+          return current is ChatLoading ||
+              current is ChatError ||
+              current is MessagesLoaded;
+        },
         builder: (context, state) {
           if (state is ChatLoading) {
             return const Center(
@@ -117,8 +146,11 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
             );
           }
 
-          return const Center(
-            child: Text('Loading messages...'),
+          // Show empty message placeholder until messages load
+          return ChatWidgets.emptyChatState(
+            title: 'Loading messages...',
+            subtitle: 'Please wait while we load your conversation.',
+            icon: Icons.chat,
           );
         },
       ),
@@ -234,6 +266,13 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
     if (_currentUserId == null) return const SizedBox.shrink();
 
     final isOwnMessage = message.senderId == _currentUserId;
+
+    // Debug logging
+    print('💬 Message debug:');
+    print('  Current User ID: $_currentUserId');
+    print('  Message Sender ID: ${message.senderId}');
+    print('  Is Own Message: $isOwnMessage');
+    print('  Message: ${message.message}');
 
     return ChatWidgets.messageBubble(
       message: message.message,

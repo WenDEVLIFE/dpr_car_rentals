@@ -79,9 +79,15 @@ class _ChatViewState extends State<ChatView> {
                 backgroundColor: Colors.red,
               ),
             );
-            // After showing error, reload chats
-            context.read<ChatBloc>().add(LoadChats());
+            // Don't automatically reload on error - let user retry manually
           }
+        },
+        buildWhen: (previous, current) {
+          // Only rebuild for states relevant to ChatView (chat list)
+          return current is ChatLoading ||
+              current is ChatError ||
+              current is ChatsLoaded ||
+              current is ChatInitial;
         },
         builder: (context, state) {
           if (state is ChatLoading) {
@@ -132,20 +138,7 @@ class _ChatViewState extends State<ChatView> {
             return _buildConversationsList(state.filteredChats);
           }
 
-          if (state is ChatInitial) {
-            // Trigger load chats if we're in initial state and haven't initialized yet
-            if (!_hasInitialized) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                context.read<ChatBloc>().add(LoadChats());
-                _hasInitialized = true;
-              });
-            }
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          // For other states like MessageSent, keep showing loading while we reload
+          // Show loading for ChatInitial state (no chats loaded yet)
           return const Center(
             child: CircularProgressIndicator(),
           );

@@ -10,6 +10,7 @@ import 'package:dpr_car_rentals/src/repository/PaymentRepository.dart';
 import 'package:dpr_car_rentals/src/views/owner/PaymentProcessView.dart';
 import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
+import 'package:dpr_car_rentals/src/widget/UnreadNotificationBadge.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -257,6 +258,14 @@ class _OwnerBookingsViewState extends State<OwnerBookingsView>
           fontFamily: 'Inter',
           weight: FontWeight.w700,
         ),
+        actions: [
+          UnreadNotificationBadge(
+            child: IconButton(
+              icon: const Icon(Icons.notifications, color: Colors.white),
+              onPressed: null, // Handled by UnreadNotificationBadge
+            ),
+          ),
+        ],
         elevation: 0,
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,

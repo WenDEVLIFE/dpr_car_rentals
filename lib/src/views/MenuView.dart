@@ -1,5 +1,6 @@
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
+import 'package:dpr_car_rentals/src/widget/UnreadNotificationBadge.dart';
 import 'package:flutter/material.dart';
 import '../helpers/SessionHelpers.dart';
 import 'LoginScreen.dart';
@@ -51,6 +52,14 @@ class _MenuViewState extends State<MenuView> {
             weight: FontWeight.w700),
         elevation: 0,
         backgroundColor: Colors.blue,
+        actions: [
+          UnreadNotificationBadge(
+            child: IconButton(
+              icon: const Icon(Icons.notifications, color: Colors.white),
+              onPressed: null, // Handled by UnreadNotificationBadge
+            ),
+          ),
+        ],
       ),
       body: _userInfo == null
           ? const Center(child: CircularProgressIndicator())

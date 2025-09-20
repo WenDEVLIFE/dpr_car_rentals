@@ -15,6 +15,7 @@ import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/ImageZoomView.dart';
 import 'package:dpr_car_rentals/src/widget/CarDisplayWidgets.dart';
 import 'package:dpr_car_rentals/src/widget/ChatWidgets.dart';
+import 'package:dpr_car_rentals/src/widget/UnreadNotificationBadge.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -170,6 +171,14 @@ class _RentACarViewState extends State<RentACarView> {
           fontFamily: 'Inter',
           weight: FontWeight.w700,
         ),
+        actions: [
+          UnreadNotificationBadge(
+            child: IconButton(
+              icon: const Icon(Icons.notifications, color: Colors.white),
+              onPressed: null, // Handled by UnreadNotificationBadge
+            ),
+          ),
+        ],
         elevation: 0,
         backgroundColor: Colors.blue,
         foregroundColor: Colors.blue,

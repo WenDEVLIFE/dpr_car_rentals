@@ -13,6 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../widget/UnreadNotificationBadge.dart' show UnreadNotificationBadge;
+
 class ChatView extends StatefulWidget {
   const ChatView({super.key});
 
@@ -67,6 +69,14 @@ class _ChatViewState extends State<ChatView> {
           fontFamily: 'Inter',
           weight: FontWeight.w700,
         ),
+        actions: [
+          UnreadNotificationBadge(
+            child: IconButton(
+              icon: const Icon(Icons.notifications, color: Colors.white),
+              onPressed: null, // Handled by UnreadNotificationBadge
+            ),
+          ),
+        ],
         elevation: 0,
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,

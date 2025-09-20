@@ -11,6 +11,7 @@ import 'package:dpr_car_rentals/src/widget/CustomTextField.dart';
 import 'package:dpr_car_rentals/src/widget/ImageZoomView.dart';
 import 'package:dpr_car_rentals/src/widget/SearchTextField.dart';
 import 'package:dpr_car_rentals/src/widget/CarDisplayWidgets.dart';
+import 'package:dpr_car_rentals/src/widget/UnreadNotificationBadge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -69,6 +70,12 @@ class _OwnerCarViewState extends State<OwnerCarView> {
             icon: const Icon(Icons.add, color: Colors.white,),
             onPressed: () => _showAddCarDialog(),
           ),
+            UnreadNotificationBadge(
+              child: IconButton(
+                icon: const Icon(Icons.notifications, color: Colors.white),
+                onPressed: null, // Handled by UnreadNotificationBadge
+              ),
+            ),
         ],
       ),
       body: BlocListener<OwnerCarBloc, OwnerCarState>(

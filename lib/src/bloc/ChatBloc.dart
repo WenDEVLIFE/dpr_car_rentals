@@ -43,7 +43,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       await emit.forEach<List<ChatConversation>>(
         _chatRepository.getUserChats(_currentUserId!),
         onData: (chats) => ChatsLoaded(chats, chats),
-        onError: (error, stackTrace) => ChatError('Failed to load chats: $error'),
+        onError: (error, stackTrace) =>
+            ChatError('Failed to load chats: $error'),
       );
     } catch (e) {
       if (!emit.isDone) {
@@ -78,12 +79,15 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         onData: (messages) {
           // Handle marking messages as read asynchronously without blocking
           if (messages.isNotEmpty) {
-            _chatRepository.markMessagesAsRead(event.chatId, _currentUserId!)
-                .catchError((error) => print('Error marking messages as read: $error'));
+            _chatRepository
+                .markMessagesAsRead(event.chatId, _currentUserId!)
+                .catchError(
+                    (error) => print('Error marking messages as read: $error'));
           }
           return MessagesLoaded(messages, conversation);
         },
-        onError: (error, stackTrace) => ChatError('Failed to load messages: $error'),
+        onError: (error, stackTrace) =>
+            ChatError('Failed to load messages: $error'),
       );
     } catch (e) {
       if (!emit.isDone) {
@@ -174,29 +178,49 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       }
 
       final currentUserId = userInfo['uid'] as String;
-      final currentUserName =
-          userInfo['fullName'] ?? userInfo['name'] ?? 'User';
-      final currentUserRole = userInfo['role'] ?? 'user';
 
-      // Create new chat
+      // Get real user information from Firebase collections instead of session
+      final realUserInfo = await _chatRepository.getUserInfo(currentUserId);
+      final currentUserName = realUserInfo?['Fullname'] ?? 'Unknown User';
+      final currentUserRole = realUserInfo?['Role'] ?? 'user';
+
+      // Also get real recipient information from Firebase collections
+      final recipientInfo =
+          await _chatRepository.getUserInfo(event.params.recipientId);
+      final realRecipientName =
+          recipientInfo?['Fullname'] ?? event.params.recipientName;
+      final realRecipientRole =
+          recipientInfo?['Role'] ?? event.params.recipientRole;
+
+      // Create updated params with real names
+      final updatedParams = CreateChatParams(
+        recipientId: event.params.recipientId,
+        recipientName: realRecipientName,
+        recipientRole: realRecipientRole,
+        carId: event.params.carId,
+        carName: event.params.carName,
+        type: event.params.type,
+      );
+
+      // Create new chat with real user information
       final chatId = await _chatRepository.createChat(
         currentUserId,
         currentUserName,
         currentUserRole,
-        event.params,
+        updatedParams,
       );
 
-      // Create conversation object for immediate response
+      // Create conversation object for immediate response with real names
       final conversation = ChatConversation(
         id: chatId,
         participantIds: [currentUserId, event.params.recipientId],
         participantNames: {
           currentUserId: currentUserName,
-          event.params.recipientId: event.params.recipientName,
+          event.params.recipientId: realRecipientName,
         },
         participantRoles: {
           currentUserId: currentUserRole,
-          event.params.recipientId: event.params.recipientRole,
+          event.params.recipientId: realRecipientRole,
         },
         carId: event.params.carId,
         carName: event.params.carName,

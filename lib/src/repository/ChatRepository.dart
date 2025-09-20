@@ -87,6 +87,12 @@ class ChatRepositoryImpl implements ChatRepository {
   Future<String> createChat(String currentUserId, String currentUserName,
       String currentUserRole, CreateChatParams params) async {
     try {
+      print('📄 Creating chat with participants:');
+      print(
+          '  Current User: $currentUserId -> $currentUserName ($currentUserRole)');
+      print(
+          '  Recipient: ${params.recipientId} -> ${params.recipientName} (${params.recipientRole})');
+
       final chatData = ChatConversation(
         id: '', // Will be set by Firestore
         participantIds: [currentUserId, params.recipientId],
@@ -116,6 +122,8 @@ class ChatRepositoryImpl implements ChatRepository {
           .collection(_chatsCollection)
           .add(chatData.toFirestore());
 
+      print('✅ Chat created successfully: ${docRef.id}');
+      print('  Participant names saved: ${chatData.participantNames}');
       return docRef.id;
     } catch (e) {
       print('🚨 Error creating chat: $e');
@@ -255,26 +263,58 @@ class ChatRepositoryImpl implements ChatRepository {
   // Helper method to get user info for chat creation
   Future<Map<String, String>?> getUserInfo(String userId) async {
     try {
+      print('🔍 Getting user info for userId: $userId');
+
       // Check users collection first
       final userDoc = await _firestore.collection('users').doc(userId).get();
       if (userDoc.exists) {
         final data = userDoc.data() as Map<String, dynamic>;
+        print('📋 User document data: $data');
+        final name = data['FullName'] ??
+            data['FullName'] ??
+            data['FullName'] ??
+            data['FullName'];
+        print('✅ Found user in users collection: $name');
         return {
-          'name': data['fullName'] ?? data['name'] ?? 'Unknown User',
-          'role': data['role'] ?? 'user',
+          'FullName': name,
+          'Role': data['Role'] ?? data['Role'] ?? 'user',
         };
       }
 
       // Check owners collection
-      final ownerDoc = await _firestore.collection('owners').doc(userId).get();
+      final ownerDoc = await _firestore.collection('users').doc(userId).get();
       if (ownerDoc.exists) {
         final data = ownerDoc.data() as Map<String, dynamic>;
+        print('📋 Owner document data: $data');
+        final name = data['FullName'] ??
+            data['FullName'] ??
+            data['FullName'] ??
+            data['FullName'];
+        print('✅ Found user in owners collection: $name');
         return {
-          'name': data['fullName'] ?? data['name'] ?? 'Owner',
+          'name': name,
           'role': 'owner',
         };
       }
 
+      // Check admins collection as well
+      final adminDoc = await _firestore.collection('users').doc(userId).get();
+      if (adminDoc.exists) {
+        final data = adminDoc.data() as Map<String, dynamic>;
+        print('📋 Admin document data: $data');
+        final name = data['FullName'] ??
+            data['FullName'] ??
+            data['FullName'] ??
+            data['FullName'] ??
+            'Admin';
+        print('✅ Found user in admins collection: $name');
+        return {
+          'FullName': name,
+          'Role': 'admin',
+        };
+      }
+
+      print('❌ User not found in any collection: $userId');
       return null;
     } catch (e) {
       print('🚨 Error getting user info: $e');
@@ -286,41 +326,56 @@ class ChatRepositoryImpl implements ChatRepository {
   Future<String> startChatWithOwner(String currentUserId, String ownerId,
       String carId, String carName) async {
     try {
+      print(
+          '👋 Starting chat between user: $currentUserId and owner: $ownerId');
+
       // Get current user info
       final currentUserInfo = await getUserInfo(currentUserId);
       if (currentUserInfo == null) {
-        throw Exception('Current user not found');
+        print(
+            '❌ Current user not found in Firebase collections: $currentUserId');
+        throw Exception(
+            'Current user not found in database. Please ensure your account is properly set up.');
       }
+      print(
+          '✅ Current user info: ${currentUserInfo['name']} (${currentUserInfo['role']})');
 
       // Get owner info
       final ownerInfo = await getUserInfo(ownerId);
       if (ownerInfo == null) {
-        throw Exception('Owner not found');
+        print('❌ Owner not found in Firebase collections: $ownerId');
+        throw Exception(
+            'Car owner not found in database. This car might not have a valid owner.');
       }
+      print('✅ Owner info: ${ownerInfo['name']} (${ownerInfo['role']})');
 
       // Check if chat already exists
       final existingChat =
           await findExistingChat(currentUserId, ownerId, carId: carId);
       if (existingChat != null) {
+        print('✅ Found existing chat: ${existingChat.id}');
         return existingChat.id;
       }
 
       // Create new chat
       final chatParams = CreateChatParams(
         recipientId: ownerId,
-        recipientName: ownerInfo['name']!,
-        recipientRole: ownerInfo['role']!,
+        recipientName: ownerInfo['FullName']!,
+        recipientRole: ownerInfo['Role']!,
         carId: carId,
         carName: carName,
         type: ChatType.userOwner,
       );
 
-      return await createChat(
+      final chatId = await createChat(
         currentUserId,
-        currentUserInfo['name']!,
-        currentUserInfo['role']!,
+        currentUserInfo['FullName']!,
+        currentUserInfo['Role']!,
         chatParams,
       );
+
+      print('✅ Created new chat: $chatId');
+      return chatId;
     } catch (e) {
       print('🚨 Error starting chat with owner: $e');
       rethrow;

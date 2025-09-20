@@ -44,8 +44,8 @@ class MyApp extends StatelessWidget {
               UserBloc(UserRepositoryImpl(), RegisterRepositoryImpl()),
         ),
         BlocProvider<UserHomeBloc>(
-          create: (context) =>
-              UserHomeBloc(UserRepositoryImpl(), SessionHelpers()),
+          create: (context) => UserHomeBloc(
+              UserRepositoryImpl(), CarRepositoryImpl(), SessionHelpers()),
         ),
         BlocProvider<ChatBloc>(
           create: (context) => ChatBloc(SessionHelpers()),

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../models/CarModel.dart';
 import '../../models/UserModel.dart';
 
 // Placeholder models for home data
@@ -91,18 +92,21 @@ class UserHomeLoading extends UserHomeState {}
 class UserHomeLoaded extends UserHomeState {
   final UserModel? user;
   final List<FeaturedCar> featuredCars;
+  final List<CarModel> activeCars;
   final List<RecentActivity> recentActivities;
   final HomeStats stats;
 
   UserHomeLoaded({
     this.user,
     required this.featuredCars,
+    required this.activeCars,
     required this.recentActivities,
     required this.stats,
   });
 
   @override
-  List<Object?> get props => [user, featuredCars, recentActivities, stats];
+  List<Object?> get props =>
+      [user, featuredCars, activeCars, recentActivities, stats];
 }
 
 class UserHomeError extends UserHomeState {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widget/modern_navigation_bar.dart';
 import '../MenuView.dart';
 import 'ChatView.dart';
+import 'RentACarView.dart';
 import 'UserHomeView.dart';
 
 class UserMainView extends StatefulWidget {
@@ -17,6 +18,8 @@ class _UserMainViewState extends State<UserMainView> {
   final List<Widget> _screens = [
     // Home Screen
     const UserHomeView(),
+    // Rent a Car Screen
+    const RentACarView(),
     // Search Screen
     const Center(
       child: Text(

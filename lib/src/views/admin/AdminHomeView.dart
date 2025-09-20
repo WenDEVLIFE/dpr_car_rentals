@@ -1,6 +1,11 @@
 import 'package:dpr_car_rentals/src/bloc/FeedbackBloc.dart';
+import 'package:dpr_car_rentals/src/bloc/ActivityBloc.dart';
+import 'package:dpr_car_rentals/src/bloc/event/ActivityEvent.dart';
+import 'package:dpr_car_rentals/src/bloc/state/ActivityState.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
+import 'package:dpr_car_rentals/src/models/ActivityModel.dart';
 import 'package:dpr_car_rentals/src/repository/FeedbackRepository.dart';
+import 'package:dpr_car_rentals/src/repository/ActivityRepository.dart';
 import 'package:dpr_car_rentals/src/views/admin/UserScreen.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +23,14 @@ class AdminHomeView extends StatefulWidget {
 class _AdminHomeViewState extends State<AdminHomeView> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ActivityBloc>(
+          create: (context) => ActivityBloc(ActivityRepositoryImpl())
+            ..add(LoadRecentActivities(limit: 10)),
+        ),
+      ],
+      child: Scaffold(
       backgroundColor: ThemeHelper.backgroundColor,
       appBar: AppBar(
         title: CustomText(
@@ -77,11 +89,11 @@ class _AdminHomeViewState extends State<AdminHomeView> {
                 _buildChartsSection(),
               ],
             ),
-          ),
-        ),
+          ),        ),
       ),
+        ),
     );
-  }
+      }
 
   Widget _buildWelcomeSection() {
     return Container(
@@ -317,7 +329,8 @@ class _AdminHomeViewState extends State<AdminHomeView> {
                 subtitle: 'View all users',
                 color: Colors.green,
                 onTap: () {
-                 Navigator.push(context, MaterialPageRoute(builder: (context) =>UserScreen()));
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => UserScreen()));
                 },
               ),
             ),
@@ -349,8 +362,8 @@ class _AdminHomeViewState extends State<AdminHomeView> {
           ],
         ),
       ],
-    );
-  }
+);
+}
 
   Widget _buildActionCard({
     required IconData icon,
@@ -406,10 +419,10 @@ class _AdminHomeViewState extends State<AdminHomeView> {
               weight: FontWeight.w400,
             ),
           ],
-        ),
       ),
-    );
-  }
+      ),
+);
+}
 
   Widget _buildRecentActivities() {
     return Column(
@@ -453,40 +466,91 @@ class _AdminHomeViewState extends State<AdminHomeView> {
               ),
             ],
           ),
-          child: Column(
-            children: [
-              _buildActivityItem(
-                icon: Icons.person_add,
-                title: 'New user registered',
-                subtitle: 'John Doe joined the platform',
-                time: '2 minutes ago',
-                color: Colors.green,
-              ),
-              const Divider(height: 16),
-              _buildActivityItem(
-                icon: Icons.directions_car,
-                title: 'Car added to fleet',
-                subtitle: 'Toyota Camry 2024 added',
-                time: '15 minutes ago',
-                color: Colors.blue,
-              ),
-              const Divider(height: 16),
-              _buildActivityItem(
-                icon: Icons.book_online,
-                title: 'New booking received',
-                subtitle: 'Honda Civic booked for 3 days',
-                time: '1 hour ago',
-                color: Colors.orange,
-              ),
-              const Divider(height: 16),
-              _buildActivityItem(
-                icon: Icons.star,
-                title: 'New review received',
-                subtitle: '5-star rating from Sarah Johnson',
-                time: '2 hours ago',
-                color: Colors.purple,
-              ),
-            ],
+          child: BlocBuilder<ActivityBloc, ActivityState>(
+            builder: (context, state) {
+              if (state is ActivityLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else if (state is ActivityLoaded) {
+                final activities = state.activities;
+                if (activities.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.inbox,
+                          size: 48,
+                          color: ThemeHelper.textColor1,
+                        ),
+                        const SizedBox(height: 12),
+                        CustomText(
+                          text: 'No recent activities',
+                          size: 16,
+                          color: ThemeHelper.textColor,
+                          fontFamily: 'Inter',
+                          weight: FontWeight.w500,
+                        ),
+                        const SizedBox(height: 4),
+                        CustomText(
+                          text: 'Activities will appear here when they occur',
+                          size: 14,
+                          color: ThemeHelper.textColor1,
+                          fontFamily: 'Inter',
+                          weight: FontWeight.w400,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return Column(
+                  children: activities.map((activity) {
+                    return Column(
+                      children: [
+                        _buildActivityItemFromModel(activity),
+                        if (activity != activities.last)
+                          const Divider(height: 16),
+                      ],
+                    );
+                  }).toList(),
+                );
+              } else if (state is ActivityError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 12),
+                      CustomText(
+                        text: 'Error loading activities',
+                        size: 16,
+                        color: ThemeHelper.textColor,
+                        fontFamily: 'Inter',
+                        weight: FontWeight.w500,
+                      ),
+                      const SizedBox(height: 4),
+                      CustomText(
+                        text: state.message,
+                        size: 14,
+                        color: ThemeHelper.textColor1,
+                        fontFamily: 'Inter',
+                        weight: FontWeight.w400,
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            },
           ),
         ),
       ],
@@ -545,6 +609,120 @@ class _AdminHomeViewState extends State<AdminHomeView> {
         ),
       ],
     );
+  }
+
+  Widget _buildActivityItemFromModel(ActivityModel activity) {
+    IconData icon;
+    Color color;
+
+    // Determine icon and color based on activity type
+    switch (activity.type) {
+      case ActivityType.userRegistered:
+      case ActivityType.userAdded:
+        icon = Icons.person_add;
+        color = Colors.green;
+        break;
+      case ActivityType.userUpdated:
+        icon = Icons.person;
+        color = Colors.blue;
+        break;
+      case ActivityType.userDeleted:
+        icon = Icons.person_remove;
+        color = Colors.red;
+        break;
+      case ActivityType.bookingCreated:
+        icon = Icons.book_online;
+        color = Colors.orange;
+        break;
+      case ActivityType.bookingApproved:
+        icon = Icons.check_circle;
+        color = Colors.green;
+        break;
+      case ActivityType.bookingRejected:
+        icon = Icons.cancel;
+        color = Colors.red;
+        break;
+      case ActivityType.bookingCancelled:
+        icon = Icons.event_busy;
+        color = Colors.grey;
+        break;
+      case ActivityType.bookingDeleted:
+        icon = Icons.delete;
+        color = Colors.red;
+        break;
+      case ActivityType.carAdded:
+        icon = Icons.directions_car;
+        color = Colors.blue;
+        break;
+      case ActivityType.reviewReceived:
+        icon = Icons.star;
+        color = Colors.purple;
+        break;
+    }
+
+    // Format timestamp to relative time
+    String timeAgo = _getTimeAgo(activity.timestamp);
+
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: color,
+            size: 16,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomText(
+                text: activity.title,
+                size: 14,
+                color: ThemeHelper.textColor,
+                fontFamily: 'Inter',
+                weight: FontWeight.w500,
+              ),
+              CustomText(
+                text: activity.description,
+                size: 12,
+                color: ThemeHelper.textColor1,
+                fontFamily: 'Inter',
+                weight: FontWeight.w400,
+              ),
+            ],
+          ),
+        ),
+        CustomText(
+          text: timeAgo,
+          size: 12,
+          color: ThemeHelper.textColor1,
+          fontFamily: 'Inter',
+          weight: FontWeight.w400,
+        ),
+      ],
+    );
+  }
+
+  String _getTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
+    } else {
+      return 'Just now';
+    }
   }
 
   Widget _buildChartsSection() {

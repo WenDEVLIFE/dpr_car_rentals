@@ -1,3 +1,4 @@
+import 'package:dpr_car_rentals/src/widget/CustomPasswordField.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,11 +58,7 @@ class _UserScreenState extends State<UserScreen> {
             ),
             if (!isEditing) ...[
               const SizedBox(height: 16),
-              CustomTextField(
-                controller: passwordController,
-                labelText: 'Password',
-                hintText: 'Enter password',
-              ),
+              CustomOutlinePassField(hintText: 'Password', labelText: 'Enter Password', controller: passwordController)
             ],
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(

@@ -44,7 +44,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
   void _onRegisterUser(RegisterUser event, Emitter<UserState> emit) async {
     try {
-      final success = await registerRepository.registerUser(
+      // Use Firestore-only creation for admin-created users to avoid Firebase Auth issues
+      final success = await registerRepository.createUserInFirestoreOnly(
         email: event.user.email,
         fullName: event.user.fullName,
         password: event.password,

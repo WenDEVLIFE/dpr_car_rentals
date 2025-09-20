@@ -33,6 +33,13 @@ abstract class RegisterRepository {
   });
 
   Future<bool> resetPassword(String email);
+
+  Future<bool> createUserInFirestoreOnly({
+    required String email,
+    required String fullName,
+    required String password,
+    String role = 'user',
+  });
 }
 
 class RegisterRepositoryImpl extends RegisterRepository {
@@ -226,6 +233,36 @@ class RegisterRepositoryImpl extends RegisterRepository {
       return true;
     } catch (e) {
       print('Password reset error: $e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> createUserInFirestoreOnly({
+    required String email,
+    required String fullName,
+    required String password,
+    String role = 'user',
+  }) async {
+    try {
+      // Generate a UID for the user (since we're not using Firebase Auth)
+      final String uid = _firestore.collection('users').doc().id;
+
+      // Save user data to Firestore
+      await _firestore.collection('users').doc(uid).set({
+        'UserID': uid,
+        'Email': email,
+        'FullName': fullName,
+        'Role': role,
+        'Password':
+            password, // Store password in plain text (not recommended for production)
+        'createdAt': FieldValue.serverTimestamp(),
+        'CreatedByAdmin': true, // Mark as admin-created
+      });
+
+      return true;
+    } catch (e) {
+      print('Firestore user creation error: $e');
       return false;
     }
   }

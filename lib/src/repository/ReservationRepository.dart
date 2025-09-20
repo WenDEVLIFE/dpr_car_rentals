@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/ReservationModel.dart';
+import '../models/ActivityModel.dart';
+import 'ActivityRepository.dart';
 
 abstract class ReservationRepository {
   Stream<List<ReservationModel>> getAllReservations();
@@ -26,6 +28,7 @@ abstract class ReservationRepository {
 
 class ReservationRepositoryImpl extends ReservationRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ActivityRepository _activityRepository = ActivityRepositoryImpl();
 
   @override
   Stream<List<ReservationModel>> getAllReservations() {
@@ -186,6 +189,20 @@ class ReservationRepositoryImpl extends ReservationRepository {
       final docRef = _firestore.collection('reservations').doc();
       final reservationWithId = reservation.copyWith(id: docRef.id);
       await docRef.set(reservationWithId.toMap());
+
+      // Log activity
+      await logActivity(ActivityModel(
+        id: '',
+        type: ActivityType.bookingCreated,
+        title: 'New Booking Received',
+        description:
+            '${reservation.fullName} booked a car for ${reservation.durationInDays} days',
+        userId: reservation.userId,
+        userName: reservation.fullName,
+        targetId: reservation.id,
+        targetName: 'Car Booking',
+        timestamp: DateTime.now(),
+      ));
     } catch (e) {
       print('Error adding reservation: $e');
       rethrow;
@@ -211,6 +228,12 @@ class ReservationRepositoryImpl extends ReservationRepository {
       String reservationId, ReservationStatus status,
       {String? rejectionReason}) async {
     try {
+      // Get reservation details before updating
+      final reservationDoc =
+          await _firestore.collection('reservations').doc(reservationId).get();
+      final reservationData = reservationDoc.data();
+      final userName = reservationData?['FullName'] ?? 'Unknown User';
+
       final updateData = {
         'Status': status.toString().split('.').last,
         'UpdatedAt': Timestamp.now(),
@@ -224,6 +247,45 @@ class ReservationRepositoryImpl extends ReservationRepository {
           .collection('reservations')
           .doc(reservationId)
           .update(updateData);
+
+      // Log activity based on status
+      ActivityType activityType;
+      String activityTitle;
+      String activityDescription;
+
+      switch (status) {
+        case ReservationStatus.approved:
+          activityType = ActivityType.bookingApproved;
+          activityTitle = 'Booking Approved';
+          activityDescription = 'Booking for $userName was approved';
+          break;
+        case ReservationStatus.rejected:
+          activityType = ActivityType.bookingRejected;
+          activityTitle = 'Booking Rejected';
+          activityDescription =
+              'Booking for $userName was rejected${rejectionReason != null ? ': $rejectionReason' : ''}';
+          break;
+        case ReservationStatus.cancelled:
+          activityType = ActivityType.bookingCancelled;
+          activityTitle = 'Booking Cancelled';
+          activityDescription = 'Booking for $userName was cancelled';
+          break;
+        default:
+          return; // Don't log for other status changes
+      }
+
+      await logActivity(ActivityModel(
+        id: '',
+        type: activityType,
+        title: activityTitle,
+        description: activityDescription,
+        userId: null,
+        userName: 'Owner/Admin',
+        targetId: reservationId,
+        targetName: userName,
+        timestamp: DateTime.now(),
+        metadata: rejectionReason != null ? {'reason': rejectionReason} : null,
+      ));
     } catch (e) {
       print('Error updating reservation status: $e');
       rethrow;
@@ -238,5 +300,9 @@ class ReservationRepositoryImpl extends ReservationRepository {
       print('Error deleting reservation: $e');
       rethrow;
     }
+  }
+
+  Future<void> logActivity(ActivityModel activity) async {
+    await _activityRepository.addActivity(activity);
   }
 }

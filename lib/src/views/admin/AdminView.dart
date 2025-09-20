@@ -1,5 +1,6 @@
 import 'package:dpr_car_rentals/src/bloc/AdminHomeBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/ActivityBloc.dart';
+import 'package:dpr_car_rentals/src/bloc/NotificationBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/event/AdminHomeEvent.dart';
 import 'package:dpr_car_rentals/src/bloc/event/ActivityEvent.dart';
 import 'package:dpr_car_rentals/src/repository/CarRepository.dart';
@@ -7,6 +8,7 @@ import 'package:dpr_car_rentals/src/repository/UserRepository.dart';
 import 'package:dpr_car_rentals/src/repository/ReservationRepository.dart';
 import 'package:dpr_car_rentals/src/repository/FeedbackRepository.dart';
 import 'package:dpr_car_rentals/src/repository/ActivityRepository.dart';
+import 'package:dpr_car_rentals/src/repository/NotificationRepository.dart';
 import 'package:dpr_car_rentals/src/views/MenuView.dart';
 import 'package:dpr_car_rentals/src/views/admin/AdminCarView.dart';
 import 'package:dpr_car_rentals/src/views/admin/AdminHomeView.dart';
@@ -57,6 +59,9 @@ class _DashboardViewState extends State<AdminDashboardView> {
         BlocProvider<ActivityBloc>(
           create: (context) => ActivityBloc(ActivityRepositoryImpl())
             ..add(LoadRecentActivities(limit: 10)),
+        ),
+        BlocProvider<NotificationBloc>(
+          create: (context) => NotificationBloc(NotificationRepositoryImpl()),
         ),
       ],
       child: Scaffold(

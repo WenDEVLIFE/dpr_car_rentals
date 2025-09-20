@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../models/CarModel.dart';
+import '../helpers/NotificationHelper.dart';
 
 abstract class CarRepository {
   Stream<List<CarModel>> getAllCars();
@@ -91,19 +92,67 @@ class CarRepositoryImpl extends CarRepository {
 
   @override
   Future<void> approveCar(String carId) async {
-    await _firestore.collection('cars').doc(carId).update({
-      'Status': 'active',
-      'UpdatedAt': Timestamp.now(),
-    });
+    // Get car details before updating
+    final carDoc = await _firestore.collection('cars').doc(carId).get();
+    if (carDoc.exists) {
+      final carData = carDoc.data() as Map<String, dynamic>;
+      final ownerId = carData['OwnerID'] as String?;
+      final carName = '${carData['Name'] ?? ''} ${carData['Model'] ?? ''}';
+
+      // Update car status
+      await _firestore.collection('cars').doc(carId).update({
+        'Status': 'active',
+        'UpdatedAt': Timestamp.now(),
+      });
+
+      // Send notification to owner
+      if (ownerId != null) {
+        await NotificationHelper.sendCarApprovalNotification(
+          ownerId: ownerId,
+          carName: carName,
+          approved: true,
+        );
+      }
+    } else {
+      await _firestore.collection('cars').doc(carId).update({
+        'Status': 'active',
+        'UpdatedAt': Timestamp.now(),
+      });
+    }
   }
 
   @override
   Future<void> rejectCar(String carId, String reason) async {
-    await _firestore.collection('cars').doc(carId).update({
-      'Status': 'rejected',
-      'RejectionReason': reason,
-      'UpdatedAt': Timestamp.now(),
-    });
+    // Get car details before updating
+    final carDoc = await _firestore.collection('cars').doc(carId).get();
+    if (carDoc.exists) {
+      final carData = carDoc.data() as Map<String, dynamic>;
+      final ownerId = carData['OwnerID'] as String?;
+      final carName = '${carData['Name'] ?? ''} ${carData['Model'] ?? ''}';
+
+      // Update car status
+      await _firestore.collection('cars').doc(carId).update({
+        'Status': 'rejected',
+        'RejectionReason': reason,
+        'UpdatedAt': Timestamp.now(),
+      });
+
+      // Send notification to owner
+      if (ownerId != null) {
+        await NotificationHelper.sendCarApprovalNotification(
+          ownerId: ownerId,
+          carName: carName,
+          approved: false,
+          rejectionReason: reason,
+        );
+      }
+    } else {
+      await _firestore.collection('cars').doc(carId).update({
+        'Status': 'rejected',
+        'RejectionReason': reason,
+        'UpdatedAt': Timestamp.now(),
+      });
+    }
   }
 
   @override

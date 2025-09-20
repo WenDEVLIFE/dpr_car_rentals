@@ -1,3 +1,5 @@
+import 'package:dpr_car_rentals/src/bloc/NotificationBloc.dart';
+import 'package:dpr_car_rentals/src/repository/NotificationRepository.dart';
 import 'package:flutter/material.dart';
 import '../../widget/modern_navigation_bar.dart';
 import '../MenuView.dart';
@@ -5,6 +7,7 @@ import 'ChatView.dart';
 import 'RentACarView.dart';
 import 'UserBookingsView.dart';
 import 'UserHomeView.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class UserMainView extends StatefulWidget {
   const UserMainView({super.key});
@@ -37,12 +40,19 @@ class _UserMainViewState extends State<UserMainView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: ModernNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        role: 'user',
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<NotificationBloc>(
+          create: (context) => NotificationBloc(NotificationRepositoryImpl()),
+        ),
+      ],
+      child: Scaffold(
+        body: _screens[_currentIndex],
+        bottomNavigationBar: ModernNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onTabTapped,
+          role: 'user',
+        ),
       ),
     );
   }

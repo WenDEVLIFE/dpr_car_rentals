@@ -1,13 +1,18 @@
 import 'package:dpr_car_rentals/src/bloc/FeedbackBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/ActivityBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/AdminHomeBloc.dart';
+import 'package:dpr_car_rentals/src/bloc/NotificationBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/event/ActivityEvent.dart';
+import 'package:dpr_car_rentals/src/bloc/event/NotificationEvent.dart';
 import 'package:dpr_car_rentals/src/bloc/state/ActivityState.dart';
 import 'package:dpr_car_rentals/src/bloc/state/AdminHomeState.dart';
+import 'package:dpr_car_rentals/src/bloc/state/NotificationState.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/models/ActivityModel.dart';
 import 'package:dpr_car_rentals/src/repository/ActivityRepository.dart';
 import 'package:dpr_car_rentals/src/repository/FeedbackRepository.dart';
+import 'package:dpr_car_rentals/src/repository/NotificationRepository.dart';
+import 'package:dpr_car_rentals/src/views/NotificationView.dart';
 import 'package:dpr_car_rentals/src/views/admin/UserScreen.dart';
 import 'package:dpr_car_rentals/src/views/admin/AllActivitiesView.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
@@ -39,6 +44,19 @@ class _AdminHomeViewState extends State<AdminHomeView> {
         elevation: 0,
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationView(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

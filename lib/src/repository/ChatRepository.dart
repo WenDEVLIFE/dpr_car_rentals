@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/ChatModel.dart';
 import '../helpers/FirebaseIndexHelper.dart';
+import '../helpers/NotificationHelper.dart';
 
 abstract class ChatRepository {
   // Conversations
@@ -345,6 +346,14 @@ class ChatRepositoryImpl implements ChatRepository {
           if (participantId != message.senderId) {
             currentUnreadCounts[participantId] =
                 (currentUnreadCounts[participantId] ?? 0) + 1;
+
+            // Send notification to recipient
+            await NotificationHelper.sendChatMessageNotification(
+              userId: participantId,
+              senderName: message.senderName,
+              message: message.message,
+              chatId: message.chatId,
+            );
           }
         }
 

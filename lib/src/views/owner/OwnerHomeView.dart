@@ -8,9 +8,12 @@ import 'package:dpr_car_rentals/src/models/ReservationModel.dart';
 import 'package:dpr_car_rentals/src/models/CarModel.dart';
 import 'package:dpr_car_rentals/src/repository/ReservationRepository.dart';
 import 'package:dpr_car_rentals/src/repository/CarRepository.dart';
+import 'package:dpr_car_rentals/src/views/NotificationView.dart';
 import 'package:dpr_car_rentals/src/views/owner/OwnerBookingsView.dart';
 import 'package:dpr_car_rentals/src/views/owner/PaymentProcessView.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
+import 'package:dpr_car_rentals/src/helpers/DebugHelper.dart';
+import 'package:dpr_car_rentals/src/widget/UnreadNotificationBadge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -142,6 +145,19 @@ class _OwnerHomeViewState extends State<OwnerHomeView> {
               elevation: 0,
               backgroundColor: Colors.blue,
               foregroundColor: Colors.blue,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.notifications, color: Colors.white),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const NotificationView(),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
             body: const Center(
               child: CircularProgressIndicator(),
@@ -162,6 +178,14 @@ class _OwnerHomeViewState extends State<OwnerHomeView> {
               elevation: 0,
               backgroundColor: Colors.blue,
               foregroundColor: Colors.blue,
+              actions: [
+                UnreadNotificationBadge(
+                  child: IconButton(
+                    icon: const Icon(Icons.notifications, color: Colors.white),
+                    onPressed: null, // Handled by UnreadNotificationBadge
+                  ),
+                ),
+              ],
             ),
             body: Center(
               child: Column(
@@ -215,6 +239,12 @@ class _OwnerHomeViewState extends State<OwnerHomeView> {
               backgroundColor: Colors.blue,
               foregroundColor: Colors.blue,
               actions: [
+                UnreadNotificationBadge(
+                  child: IconButton(
+                    icon: const Icon(Icons.notifications, color: Colors.white),
+                    onPressed: null, // Handled by UnreadNotificationBadge
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.refresh, color: Colors.white),
                   onPressed: () {
@@ -267,6 +297,14 @@ class _OwnerHomeViewState extends State<OwnerHomeView> {
             elevation: 0,
             backgroundColor: Colors.blue,
             foregroundColor: Colors.blue,
+            actions: [
+              UnreadNotificationBadge(
+                child: IconButton(
+                  icon: const Icon(Icons.notifications, color: Colors.white),
+                  onPressed: null, // Handled by UnreadNotificationBadge
+                ),
+              ),
+            ],
           ),
           body: const Center(
             child: Text('Welcome to Owner Dashboard'),
@@ -294,43 +332,68 @@ class _OwnerHomeViewState extends State<OwnerHomeView> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: const Icon(
-              Icons.business_center,
-              color: Colors.white,
-              size: 30,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomText(
-                  text: 'Welcome back, Owner!',
-                  size: 18,
+          Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: const Icon(
+                  Icons.business_center,
                   color: Colors.white,
-                  fontFamily: 'Inter',
-                  weight: FontWeight.w600,
+                  size: 30,
                 ),
-                const SizedBox(height: 4),
-                CustomText(
-                  text: 'Manage your car rental business',
-                  size: 14,
-                  color: Colors.white.withOpacity(0.9),
-                  fontFamily: 'Inter',
-                  weight: FontWeight.w400,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomText(
+                      text: 'Welcome back, Owner!',
+                      size: 18,
+                      color: Colors.white,
+                      fontFamily: 'Inter',
+                      weight: FontWeight.w600,
+                    ),
+                    const SizedBox(height: 4),
+                    CustomText(
+                      text: 'Manage your car rental business',
+                      size: 14,
+                      color: Colors.white.withOpacity(0.9),
+                      fontFamily: 'Inter',
+                      weight: FontWeight.w400,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Debug buttons for testing notifications
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ElevatedButton(
+                onPressed: DebugHelper.checkUserInfo,
+                child: const Text('Check User Info'),
+              ),
+              ElevatedButton(
+                onPressed: DebugHelper.checkNotifications,
+                child: const Text('Check Notifications'),
+              ),
+              ElevatedButton(
+                onPressed: DebugHelper.createTestNotification,
+                child: const Text('Create Test Notification'),
+              ),
+            ],
           ),
         ],
       ),

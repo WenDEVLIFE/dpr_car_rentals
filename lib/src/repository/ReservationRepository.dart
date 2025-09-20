@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/ReservationModel.dart';
+import '../models/CarModel.dart';
 import '../models/ActivityModel.dart';
 import 'ActivityRepository.dart';
+import '../helpers/NotificationHelper.dart';
 
 abstract class ReservationRepository {
   Stream<List<ReservationModel>> getAllReservations();
@@ -190,6 +192,23 @@ class ReservationRepositoryImpl extends ReservationRepository {
       final reservationWithId = reservation.copyWith(id: docRef.id);
       await docRef.set(reservationWithId.toMap());
 
+      // Get car details for notification
+      final carDoc =
+          await _firestore.collection('cars').doc(reservation.carId).get();
+      String carName = 'car';
+      if (carDoc.exists) {
+        final carData = carDoc.data() as Map<String, dynamic>;
+        carName = '${carData['Name'] ?? ''} ${carData['Model'] ?? ''}';
+      }
+
+      // Send notification to owner about new booking
+      await NotificationHelper.sendNewBookingNotification(
+        ownerId: reservation.ownerId,
+        userName: reservation.fullName,
+        carName: carName,
+        reservationId: reservationWithId.id,
+      );
+
       // Log activity
       await logActivity(ActivityModel(
         id: '',
@@ -233,6 +252,8 @@ class ReservationRepositoryImpl extends ReservationRepository {
           await _firestore.collection('reservations').doc(reservationId).get();
       final reservationData = reservationDoc.data();
       final userName = reservationData?['FullName'] ?? 'Unknown User';
+      final userId = reservationData?['UserID'] ?? '';
+      final carId = reservationData?['CarID'] ?? '';
 
       final updateData = {
         'Status': status.toString().split('.').last,
@@ -247,6 +268,26 @@ class ReservationRepositoryImpl extends ReservationRepository {
           .collection('reservations')
           .doc(reservationId)
           .update(updateData);
+
+      // Get car details for notification
+      String carName = 'car';
+      if (carId.isNotEmpty) {
+        final carDoc = await _firestore.collection('cars').doc(carId).get();
+        if (carDoc.exists) {
+          final carData = carDoc.data() as Map<String, dynamic>;
+          carName = '${carData['Name'] ?? ''} ${carData['Model'] ?? ''}';
+        }
+      }
+
+      // Send notification to user
+      final statusString = status.toString().split('.').last;
+      await NotificationHelper.sendBookingNotification(
+        userId: userId,
+        bookingTitle: carName,
+        status: statusString,
+        reason: rejectionReason,
+        reservationId: reservationId,
+      );
 
       // Log activity based on status
       ActivityType activityType;

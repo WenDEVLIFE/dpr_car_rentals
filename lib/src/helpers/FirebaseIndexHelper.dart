@@ -108,6 +108,20 @@ class FirebaseIndexHelper {
             'https://console.firebase.google.com/v1/r/project/$projectId/firestore/indexes?create_composite=Clhwcm9qZWN0cy9kcHJjYXJyZW50YWwtNzk4N2UvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL2NhcnMvaW5kZXhlcy9fEAEaCgoGU3RhdHVzEAEaDAoIQ3JlYXRlZEF0EAI');
         break;
 
+      case 'getusernotifications':
+      case 'user notifications':
+        print('🔔 User Notifications:');
+        print(
+            'https://console.firebase.google.com/v1/r/project/$projectId/firestore/indexes?create_composite=Clhwcm9qZWN0cy9kcHJjYXJyZW50YWwtNzk4N2UvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL25vdGlmaWNhdGlvbnMvaW5kZXhlcy9fEAEaCgoHVXNlcklEEAEaDAoIdGltZXN0YW1wEAI');
+        break;
+
+      case 'getunreadcount':
+      case 'unread notifications':
+        print('🔔 Unread Notifications:');
+        print(
+            'https://console.firebase.google.com/v1/r/project/$projectId/firestore/indexes?create_composite=Clhwcm9qZWN0cy9kcHJjYXJyZW50YWwtNzk4N2UvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL25vdGlmaWNhdGlvbnMvaW5kZXhlcy9fEAEaCgoHVXNlcklEEAEaCgoHaXNSZWFkEAE');
+        break;
+
       default:
         print('🔧 Common Indexes:');
         print(
@@ -157,6 +171,18 @@ class FirebaseIndexHelper {
         'description': 'Required for owner car management',
         'url':
             'https://console.firebase.google.com/v1/r/project/$projectId/firestore/indexes?create_composite=Clhwcm9qZWN0cy9kcHJjYXJyZW50YWwtNzk4N2UvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL2NhcnMvaW5kZXhlcy9fEAEaCgoGT3duZXJJRBABGgwKCENyZWF0ZWRBdBAC'
+      },
+      {
+        'name': '🔔 User Notifications',
+        'description': 'Required for notification system',
+        'url':
+            'https://console.firebase.google.com/v1/r/project/$projectId/firestore/indexes?create_composite=Clhwcm9qZWN0cy9kcHJjYXJyZW50YWwtNzk4N2UvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL25vdGlmaWNhdGlvbnMvaW5kZXhlcy9fEAEaCgoHVXNlcklEEAEaDAoIdGltZXN0YW1wEAI'
+      },
+      {
+        'name': '🔔 Unread Notifications',
+        'description': 'Required for unread notification count',
+        'url':
+            'https://console.firebase.google.com/v1/r/project/$projectId/firestore/indexes?create_composite=Clhwcm9qZWN0cy9kcHJjYXJyZW50YWwtNzk4N2UvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL25vdGlmaWNhdGlvbnMvaW5kZXhlcy9fEAEaCgoHVXNlcklEEAEaCgoHaXNSZWFkEAE'
       },
     ];
 

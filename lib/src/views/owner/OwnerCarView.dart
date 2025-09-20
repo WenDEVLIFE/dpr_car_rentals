@@ -66,7 +66,7 @@ class _OwnerCarViewState extends State<OwnerCarView> {
         foregroundColor: Colors.blue,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add, color: Colors.white,),
             onPressed: () => _showAddCarDialog(),
           ),
         ],

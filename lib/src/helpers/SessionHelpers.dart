@@ -27,7 +27,19 @@ class SessionHelpers {
     return null;
   }
 
-  static Future <void> clearUserInfo() async{
+  static Future<String?> getCurrentUserId() async {
+    // First try to get from Firebase Auth
+    final user = _auth.currentUser;
+    if (user != null) {
+      return user.uid;
+    }
+
+    // Fallback to shared preferences
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('uid');
+  }
+
+  static Future<void> clearUserInfo() async {
     SharedPreferences.getInstance().then((prefs) {
       prefs.remove('email');
       prefs.remove('uid');

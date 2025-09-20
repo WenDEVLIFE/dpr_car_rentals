@@ -9,6 +9,7 @@ import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/models/CarModel.dart';
 import 'package:dpr_car_rentals/src/models/UserModel.dart';
 import 'package:dpr_car_rentals/src/repository/ReservationRepository.dart';
+import 'package:dpr_car_rentals/src/views/NotificationView.dart';
 import 'package:dpr_car_rentals/src/views/user/BookCarView.dart';
 import 'package:dpr_car_rentals/src/views/user/ChatMessagesView.dart';
 import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
@@ -18,6 +19,8 @@ import 'package:dpr_car_rentals/src/views/user/UserBookingsView.dart';
 import 'package:dpr_car_rentals/src/widget/ModernSearchBar.dart';
 import 'package:dpr_car_rentals/src/widget/CarDisplayWidgets.dart';
 import 'package:dpr_car_rentals/src/widget/ChatWidgets.dart';
+import 'package:dpr_car_rentals/src/helpers/DebugHelper.dart';
+import 'package:dpr_car_rentals/src/widget/UnreadNotificationBadge.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -174,6 +177,14 @@ class _UserHomeViewState extends State<UserHomeView> {
               elevation: 0,
               backgroundColor: Colors.blue,
               foregroundColor: Colors.blue,
+              actions: [
+                UnreadNotificationBadge(
+                  child: IconButton(
+                    icon: const Icon(Icons.notifications, color: Colors.white),
+                    onPressed: null, // Handled by UnreadNotificationBadge
+                  ),
+                ),
+              ],
             ),
             body: const Center(
               child: CircularProgressIndicator(),
@@ -194,6 +205,14 @@ class _UserHomeViewState extends State<UserHomeView> {
               elevation: 0,
               backgroundColor: Colors.blue,
               foregroundColor: Colors.blue,
+              actions: [
+                UnreadNotificationBadge(
+                  child: IconButton(
+                    icon: const Icon(Icons.notifications, color: Colors.white),
+                    onPressed: null, // Handled by UnreadNotificationBadge
+                  ),
+                ),
+              ],
             ),
             body: Center(
               child: Column(
@@ -246,6 +265,14 @@ class _UserHomeViewState extends State<UserHomeView> {
               elevation: 0,
               backgroundColor: Colors.blue,
               foregroundColor: Colors.blue,
+              actions: [
+                UnreadNotificationBadge(
+                  child: IconButton(
+                    icon: const Icon(Icons.notifications, color: Colors.white),
+                    onPressed: null, // Handled by UnreadNotificationBadge
+                  ),
+                ),
+              ],
             ),
             body: SafeArea(
               child: SingleChildScrollView(
@@ -282,9 +309,6 @@ class _UserHomeViewState extends State<UserHomeView> {
                       _buildApprovedCars(state.activeCars),
 
                       SizedBox(height: screenHeight * 0.03),
-
-                      // Recent Activity
-                      _buildRecentActivity(state.recentActivities),
                     ],
                   ),
                 ),
@@ -305,6 +329,14 @@ class _UserHomeViewState extends State<UserHomeView> {
             elevation: 0,
             backgroundColor: Colors.blue,
             foregroundColor: Colors.blue,
+            actions: [
+              UnreadNotificationBadge(
+                child: IconButton(
+                  icon: const Icon(Icons.notifications, color: Colors.white),
+                  onPressed: null, // Handled by UnreadNotificationBadge
+                ),
+              ),
+            ],
           ),
           body: const Center(
             child: Text('Welcome to DPR Car Rentals'),
@@ -1079,5 +1111,102 @@ class _UserHomeViewState extends State<UserHomeView> {
       default:
         return Colors.grey;
     }
+  }
+
+  Widget _buildWelcomeSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Colors.blue, Colors.blueAccent],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: const Icon(
+                  Icons.account_circle,
+                  color: Colors.white,
+                  size: 30,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomText(
+                      text: 'Welcome back!',
+                      size: 18,
+                      color: Colors.white,
+                      fontFamily: 'Inter',
+                      weight: FontWeight.w600,
+                    ),
+                    const SizedBox(height: 4),
+                    CustomText(
+                      text: 'Ready to rent a car today?',
+                      size: 14,
+                      color: Colors.white.withOpacity(0.9),
+                      fontFamily: 'Inter',
+                      weight: FontWeight.w400,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Debug buttons for testing notifications
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ElevatedButton(
+                onPressed: DebugHelper.checkUserInfo,
+                child: const Text('Check User Info'),
+              ),
+              ElevatedButton(
+                onPressed: DebugHelper.checkNotifications,
+                child: const Text('Check Notifications'),
+              ),
+              ElevatedButton(
+                onPressed: DebugHelper.createTestNotification,
+                child: const Text('Create Test Notification'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationView(),
+                    ),
+                  );
+                },
+                child: const Text('View Notifications'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'package:dpr_car_rentals/src/models/UserModel.dart';
 import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/ImageZoomView.dart';
+import 'package:dpr_car_rentals/src/views/user/UserBookingsView.dart';
 import 'package:dpr_car_rentals/src/widget/ModernSearchBar.dart';
 import 'package:dpr_car_rentals/src/widget/CarDisplayWidgets.dart';
 import 'package:flutter/material.dart';
@@ -289,7 +290,13 @@ class _UserHomeViewState extends State<UserHomeView> {
                 subtitle: 'View rental history',
                 color: ThemeHelper.accentColor,
                 onTap: () {
-                  // TODO: Navigate to bookings screen
+                  // Navigate to bookings screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UserBookingsView(),
+                    ),
+                  );
                 },
               ),
             ),

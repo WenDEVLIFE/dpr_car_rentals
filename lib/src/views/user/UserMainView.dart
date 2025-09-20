@@ -3,6 +3,7 @@ import '../../widget/modern_navigation_bar.dart';
 import '../MenuView.dart';
 import 'ChatView.dart';
 import 'RentACarView.dart';
+import 'UserBookingsView.dart';
 import 'UserHomeView.dart';
 
 class UserMainView extends StatefulWidget {
@@ -20,13 +21,8 @@ class _UserMainViewState extends State<UserMainView> {
     const UserHomeView(),
     // Rent a Car Screen
     const RentACarView(),
-    // Search Screen
-    const Center(
-      child: Text(
-        'Search Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
+    // My Bookings Screen
+    const UserBookingsView(),
 
     const ChatView(),
 

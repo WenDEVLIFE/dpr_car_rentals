@@ -9,6 +9,7 @@ import 'package:dpr_car_rentals/src/bloc/UserHomeBloc.dart';
 import 'package:dpr_car_rentals/src/repository/CarRepository.dart';
 import 'package:dpr_car_rentals/src/repository/FeedbackRepository.dart';
 import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
+import 'package:dpr_car_rentals/src/helpers/FirebaseIndexHelper.dart';
 import 'package:dpr_car_rentals/src/repository/RegisterRepository.dart';
 import 'package:dpr_car_rentals/src/repository/UserRepository.dart';
 import 'package:dpr_car_rentals/src/services/FirebaseService.dart';
@@ -23,6 +24,9 @@ void main() async {
     await dotenv.load(fileName: ".env");
     runApp(const MyApp());
     await FirebaseService.run();
+
+    // Print all required Firebase indexes for easy setup
+    FirebaseIndexHelper.printAllRequiredIndexes();
   } catch (e) {
     print("Error during initialization: $e");
   }

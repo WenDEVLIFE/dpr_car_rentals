@@ -66,3 +66,12 @@ class ChatWithOwnerStarted extends ChatState {
   @override
   List<Object?> get props => [chatId];
 }
+
+class ChatDeleted extends ChatState {
+  final String chatId;
+
+  ChatDeleted(this.chatId);
+
+  @override
+  List<Object?> get props => [chatId];
+}

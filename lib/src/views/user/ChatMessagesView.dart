@@ -1,4 +1,6 @@
 import 'package:dpr_car_rentals/src/bloc/ChatBloc.dart';
+import 'dart:io';
+import 'package:dpr_car_rentals/src/bloc/ChatBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/event/ChatEvent.dart';
 import 'package:dpr_car_rentals/src/bloc/state/ChatState.dart';
 import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
@@ -6,8 +8,10 @@ import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/models/ChatModel.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/ChatWidgets.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 class ChatMessagesView extends StatefulWidget {
@@ -28,9 +32,12 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final SessionHelpers _sessionHelpers = SessionHelpers();
+  final ImagePicker _imagePicker = ImagePicker();
+
   String? _currentUserId;
   String? _currentUserName;
   ChatConversation? _conversation;
+  bool _isUploadingImage = false;
 
   @override
   void initState() {
@@ -280,6 +287,8 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
       timestamp: message.timestamp,
       isRead: message.isRead,
       senderName: isOwnMessage ? null : message.senderName,
+      imageUrl: message.imageUrl,
+      messageType: message.type,
     );
   }
 
@@ -300,13 +309,14 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
         children: [
           // Attachment button
           IconButton(
-            icon: const Icon(Icons.attach_file),
-            onPressed: () {
-              // TODO: Implement file attachment
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('File attachment coming soon!')),
-              );
-            },
+            icon: _isUploadingImage
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.photo_camera),
+            onPressed: _isUploadingImage ? null : _showImagePickerOptions,
             color: ThemeHelper.textColor1,
           ),
 
@@ -369,6 +379,103 @@ class _ChatMessagesViewState extends State<ChatMessagesView> {
             senderId: _currentUserId!,
           ));
       _messageController.clear();
+    }
+  }
+
+  void _showImagePickerOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Take a Photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        setState(() {
+          _isUploadingImage = true;
+        });
+
+        // Upload image to Firebase Storage
+        final imageUrl = await _uploadImageToStorage(File(image.path));
+
+        if (imageUrl != null && _currentUserId != null) {
+          // Send image message
+          context.read<ChatBloc>().add(SendMessage(
+                chatId: widget.chatId,
+                message: '📷 Image',
+                senderId: _currentUserId!,
+                type: MessageType.image,
+                imageUrl: imageUrl,
+              ));
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to pick image: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isUploadingImage = false;
+      });
+    }
+  }
+
+  Future<String?> _uploadImageToStorage(File imageFile) async {
+    try {
+      final String fileName =
+          'chat_images/${DateTime.now().millisecondsSinceEpoch}_${imageFile.path.split('/').last}';
+      final Reference storageRef =
+          FirebaseStorage.instance.ref().child(fileName);
+
+      final UploadTask uploadTask = storageRef.putFile(imageFile);
+      final TaskSnapshot snapshot = await uploadTask;
+
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print('Error uploading image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to upload image: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return null;
     }
   }
 }

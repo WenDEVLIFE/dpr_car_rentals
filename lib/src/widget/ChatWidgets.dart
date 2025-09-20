@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../helpers/ThemeHelper.dart';
 import '../widget/CustomText.dart';
+import '../models/ChatModel.dart';
 
 class ChatWidgets {
   // Chat with Owner Button Widget
@@ -78,118 +79,168 @@ class ChatWidgets {
     required bool isOnline,
     String? carName,
     required VoidCallback onTap,
+    VoidCallback? onDelete,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
+    return Dismissible(
+      key: Key(participantName + lastMessageTime.toString()),
+      direction: DismissDirection.endToStart,
+      background: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.red,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
-        child: Row(
-          children: [
-            // Avatar with status
-            Stack(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: _getRoleColor(participantRole),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Center(
-                    child: Text(
-                      _getRoleEmoji(participantRole),
-                      style: const TextStyle(fontSize: 20),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: const Icon(
+          Icons.delete,
+          color: Colors.white,
+          size: 30,
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        return true; // Always allow dismiss - confirmation handled by parent widget
+      },
+      onDismissed: (direction) {
+        if (onDelete != null) {
+          onDelete();
+        }
+      },
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Avatar with status
+              Stack(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: _getRoleColor(participantRole),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: Center(
+                      child: Text(
+                        _getRoleEmoji(participantRole),
+                        style: const TextStyle(fontSize: 20),
+                      ),
                     ),
                   ),
-                ),
-                if (isOnline)
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: chatStatusIndicator(isOnline: true),
-                  ),
-              ],
-            ),
+                  if (isOnline)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: chatStatusIndicator(isOnline: true),
+                    ),
+                ],
+              ),
 
-            const SizedBox(width: 12),
+              const SizedBox(width: 12),
 
-            // Chat info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomText(
-                          text: carName != null
-                              ? '$carName - $participantName'
-                              : participantName,
-                          size: 16,
-                          color: ThemeHelper.textColor,
-                          fontFamily: 'Inter',
-                          weight: FontWeight.w600,
-                        ),
-                      ),
-                      CustomText(
-                        text: _formatTime(lastMessageTime),
-                        size: 12,
-                        color: ThemeHelper.textColor1,
-                        fontFamily: 'Inter',
-                        weight: FontWeight.w400,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomText(
-                          text: lastMessage,
-                          size: 14,
-                          color: ThemeHelper.textColor1,
-                          fontFamily: 'Inter',
-                          weight: FontWeight.w400,
-                        ),
-                      ),
-                      if (unreadCount > 0)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: ThemeHelper.buttonColor,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+              // Chat info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
                           child: CustomText(
-                            text: unreadCount > 99
-                                ? '99+'
-                                : unreadCount.toString(),
-                            size: 10,
-                            color: Colors.white,
+                            text: carName != null
+                                ? '$carName - $participantName'
+                                : participantName,
+                            size: 16,
+                            color: ThemeHelper.textColor,
                             fontFamily: 'Inter',
                             weight: FontWeight.w600,
                           ),
                         ),
-                    ],
-                  ),
-                ],
+                        CustomText(
+                          text: _formatTime(lastMessageTime),
+                          size: 12,
+                          color: ThemeHelper.textColor1,
+                          fontFamily: 'Inter',
+                          weight: FontWeight.w400,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CustomText(
+                            text: lastMessage,
+                            size: 14,
+                            color: ThemeHelper.textColor1,
+                            fontFamily: 'Inter',
+                            weight: FontWeight.w400,
+                          ),
+                        ),
+                        if (unreadCount > 0)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: ThemeHelper.buttonColor,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: CustomText(
+                              text: unreadCount > 99
+                                  ? '99+'
+                                  : unreadCount.toString(),
+                              size: 10,
+                              color: Colors.white,
+                              fontFamily: 'Inter',
+                              weight: FontWeight.w600,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              // Menu button
+              if (onDelete != null)
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'delete' && onDelete != null) {
+                      onDelete();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('Delete Chat',
+                              style: TextStyle(color: Colors.red)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -273,13 +324,17 @@ class ChatWidgets {
     required DateTime timestamp,
     bool isRead = false,
     String? senderName,
+    String? imageUrl,
+    MessageType messageType = MessageType.text,
   }) {
     return Align(
       alignment: isOwn ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        constraints: const BoxConstraints(maxWidth: 280),
+        constraints: BoxConstraints(
+          maxWidth: messageType == MessageType.image ? 300 : 280,
+        ),
         decoration: BoxDecoration(
           color: isOwn ? ThemeHelper.buttonColor : Colors.white,
           borderRadius: BorderRadius.only(
@@ -311,13 +366,74 @@ class ChatWidgets {
               ),
               const SizedBox(height: 4),
             ],
-            CustomText(
-              text: message,
-              size: 14,
-              color: isOwn ? Colors.white : ThemeHelper.textColor,
-              fontFamily: 'Inter',
-              weight: FontWeight.w400,
-            ),
+
+            // Image or text content
+            if (messageType == MessageType.image && imageUrl != null) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      height: 200,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 200,
+                      color: Colors.grey[300],
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.image_not_supported,
+                            color: Colors.grey[600],
+                            size: 40,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Failed to load image',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              if (message.isNotEmpty && message != '📷 Image') ...[
+                const SizedBox(height: 8),
+                CustomText(
+                  text: message,
+                  size: 14,
+                  color: isOwn ? Colors.white : ThemeHelper.textColor,
+                  fontFamily: 'Inter',
+                  weight: FontWeight.w400,
+                ),
+              ],
+            ] else ...[
+              CustomText(
+                text: message,
+                size: 14,
+                color: isOwn ? Colors.white : ThemeHelper.textColor,
+                fontFamily: 'Inter',
+                weight: FontWeight.w400,
+              ),
+            ],
+
             const SizedBox(height: 4),
             Row(
               mainAxisSize: MainAxisSize.min,

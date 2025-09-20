@@ -22,6 +22,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<CreateChat>(_onCreateChat);
     on<StartChatWithOwner>(_onStartChatWithOwner);
     on<MarkMessagesAsRead>(_onMarkMessagesAsRead);
+    on<DeleteChat>(_onDeleteChat);
   }
 
   void _onLoadChats(LoadChats event, Emitter<ChatState> emit) async {
@@ -287,6 +288,26 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     } catch (e) {
       print('Error marking messages as read: $e');
       // Don't emit error for this as it's not critical
+    }
+  }
+
+  void _onDeleteChat(DeleteChat event, Emitter<ChatState> emit) async {
+    try {
+      final userInfo = await sessionHelpers.getUserInfo();
+      if (userInfo == null) {
+        emit(ChatError('User not logged in'));
+        return;
+      }
+
+      final currentUserId = userInfo['uid'] as String;
+      await _chatRepository.deleteChat(event.chatId, currentUserId);
+
+      emit(ChatDeleted(event.chatId));
+
+      // Reload chats to update the list
+      add(LoadChats());
+    } catch (e) {
+      emit(ChatError('Failed to delete chat: $e'));
     }
   }
 

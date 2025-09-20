@@ -1,4 +1,5 @@
 import 'package:dpr_car_rentals/src/bloc/ChatBloc.dart';
+import 'package:dpr_car_rentals/src/bloc/ChatBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/event/ChatEvent.dart';
 import 'package:dpr_car_rentals/src/bloc/state/ChatState.dart';
 import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
@@ -214,6 +215,37 @@ class _ChatViewState extends State<ChatView> {
           ),
         );
       },
+      onDelete: () async {
+        final confirmed = await _showDeleteConfirmation(chat);
+        if (confirmed == true) {
+          context.read<ChatBloc>().add(DeleteChat(chat.id));
+        }
+      },
+    );
+  }
+
+  Future<bool?> _showDeleteConfirmation(ChatConversation chat) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Chat'),
+        content: Text(
+          'Are you sure you want to delete this conversation with ${chat.getOtherParticipantName(_currentUserId!)}? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
   }
 }

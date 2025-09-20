@@ -12,6 +12,7 @@ abstract class ChatRepository {
   Future<void> updateChatLastMessage(
       String chatId, String message, String senderId);
   Future<void> markMessagesAsRead(String chatId, String userId);
+  Future<void> deleteChat(String chatId, String userId);
 
   // Messages
   Stream<List<ChatMessage>> getChatMessages(String chatId);
@@ -172,6 +173,50 @@ class ChatRepositoryImpl implements ChatRepository {
       }
     } catch (e) {
       print('🚨 Error marking messages as read: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> deleteChat(String chatId, String userId) async {
+    try {
+      // First, get the chat to verify the user is a participant
+      final chatDoc =
+          await _firestore.collection(_chatsCollection).doc(chatId).get();
+
+      if (!chatDoc.exists) {
+        throw Exception('Chat not found');
+      }
+
+      final chatData = chatDoc.data() as Map<String, dynamic>;
+      final participantIds =
+          List<String>.from(chatData['participantIds'] ?? []);
+
+      if (!participantIds.contains(userId)) {
+        throw Exception('User is not a participant in this chat');
+      }
+
+      // Delete all messages in this chat
+      final messagesQuery = await _firestore
+          .collection(_messagesCollection)
+          .where('chatId', isEqualTo: chatId)
+          .get();
+
+      final batch = _firestore.batch();
+
+      // Delete all messages
+      for (var doc in messagesQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Delete the chat conversation
+      batch.delete(_firestore.collection(_chatsCollection).doc(chatId));
+
+      await batch.commit();
+
+      print('✅ Chat deleted successfully: $chatId');
+    } catch (e) {
+      print('🚨 Error deleting chat: $e');
       rethrow;
     }
   }

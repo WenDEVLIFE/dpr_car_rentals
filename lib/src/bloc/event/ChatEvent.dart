@@ -80,3 +80,12 @@ class MarkMessagesAsRead extends ChatEvent {
   @override
   List<Object?> get props => [chatId];
 }
+
+class DeleteChat extends ChatEvent {
+  final String chatId;
+
+  DeleteChat(this.chatId);
+
+  @override
+  List<Object?> get props => [chatId];
+}

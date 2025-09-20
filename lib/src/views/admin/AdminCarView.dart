@@ -6,6 +6,7 @@ import 'package:dpr_car_rentals/src/models/CarModel.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/ImageZoomView.dart';
 import 'package:dpr_car_rentals/src/widget/SearchTextField.dart';
+import 'package:dpr_car_rentals/src/widget/CarDisplayWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -112,34 +113,12 @@ class _AdminCarViewState extends State<AdminCarView> {
 
                 // Cars List
                 Expanded(
-                  child: filteredCars.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.directions_car_outlined,
-                                size: 64,
-                                color: ThemeHelper.textColor1,
-                              ),
-                              const SizedBox(height: 16),
-                              CustomText(
-                                text: 'No cars found',
-                                size: 18,
-                                color: ThemeHelper.textColor,
-                                fontFamily: 'Inter',
-                                weight: FontWeight.w500,
-                              ),
-                            ],
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: filteredCars.length,
-                          itemBuilder: (context, index) {
-                            return _buildCarCard(filteredCars[index]);
-                          },
-                        ),
+                  child: CarListWidget(
+                    cars: filteredCars,
+                    onCarTap: (car) => _showCarDetailsDialog(car),
+                    emptyMessage: 'No cars found',
+                    actionButtons: (car) => _buildActionButtons(car),
+                  ),
                 ),
               ],
             );
@@ -147,7 +126,7 @@ class _AdminCarViewState extends State<AdminCarView> {
 
           return const Center(child: Text('Welcome to Car Management'));
         },
-        ),
+      ),
     );
   }
 
@@ -208,202 +187,34 @@ class _AdminCarViewState extends State<AdminCarView> {
     return cars;
   }
 
-  Widget _buildCarCard(CarModel car) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Car Header
-            Row(
-              children: [
-                // Car Image
-                GestureDetector(
-                  onTap: car.photoUrl != null
-                      ? () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ImageZoomView(
-                                imageUrl: car.photoUrl,
-                                heroTag: 'admin-car-${car.id}',
-                              ),
-                            ),
-                          )
-                      : null,
-                  child: Hero(
-                    tag: 'admin-car-${car.id}',
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: ThemeHelper.secondaryColor,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: car.photoUrl != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                car.photoUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.directions_car, size: 30),
-                              ),
-                            )
-                          : const Icon(Icons.directions_car, size: 30),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Car Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CustomText(
-                        text: '${car.name} ${car.model} (${car.year})',
-                        size: 16,
-                        color: ThemeHelper.textColor,
-                        fontFamily: 'Inter',
-                        weight: FontWeight.w600,
-                      ),
-                      const SizedBox(height: 4),
-                      CustomText(
-                        text: 'License: ${car.licensePlate}',
-                        size: 14,
-                        color: ThemeHelper.textColor1,
-                        fontFamily: 'Inter',
-                        weight: FontWeight.w400,
-                      ),
-                      CustomText(
-                        text: 'Location: ${car.location}',
-                        size: 14,
-                        color: ThemeHelper.textColor1,
-                        fontFamily: 'Inter',
-                        weight: FontWeight.w400,
-                      ),
-                    ],
-                  ),
-                ),
-                // Status Badge
-                _buildStatusBadge(car.status),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            // Car Details
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CustomText(
-                        text: '₱${car.dailyRate.toStringAsFixed(0)}/day',
-                        size: 16,
-                        color: ThemeHelper.buttonColor,
-                        fontFamily: 'Inter',
-                        weight: FontWeight.w600,
-                      ),
-                      CustomText(
-                        text:
-                            'Added: ${DateFormat('MMM dd, yyyy').format(car.createdAt)}',
-                        size: 12,
-                        color: ThemeHelper.textColor1,
-                        fontFamily: 'Inter',
-                        weight: FontWeight.w400,
-                      ),
-                    ],
-                  ),
-                ),
-                // Action Buttons
-                if (car.status == CarStatus.pending) ...[
-                  TextButton(
-                    onPressed: () => _showApproveDialog(car),
-                    child: const Text('Approve',
-                        style: TextStyle(color: Colors.green)),
-                  ),
-                  TextButton(
-                    onPressed: () => _showRejectDialog(car),
-                    child: const Text('Reject',
-                        style: TextStyle(color: Colors.red)),
-                  ),
-                ] else if (car.status == CarStatus.active) ...[
-                  TextButton(
-                    onPressed: () => _showDeleteDialog(car),
-                    child: const Text('Delete',
-                        style: TextStyle(color: Colors.red)),
-                  ),
-                ],
-              ],
-            ),
-
-            // Rejection Reason
-            if (car.status == CarStatus.rejected &&
-                car.rejectionReason != null) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: CustomText(
-                  text: 'Reason: ${car.rejectionReason}',
-                  size: 12,
-                  color: Colors.red,
-                  fontFamily: 'Inter',
-                  weight: FontWeight.w400,
-                ),
-              ),
-            ],
-          ],
-        ),
-        ),
+  void _showCarDetailsDialog(CarModel car) {
+    // TODO: Implement car details dialog for admin
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Car details for ${car.name} ${car.model}')),
     );
   }
 
-  Widget _buildStatusBadge(CarStatus status) {
-    Color color;
-    String text;
-
-    switch (status) {
-      case CarStatus.pending:
-        color = Colors.orange;
-        text = 'Pending';
-        break;
-      case CarStatus.active:
-        color = Colors.green;
-        text = 'Active';
-        break;
-      case CarStatus.inactive:
-        color = Colors.grey;
-        text = 'Inactive';
-        break;
-      case CarStatus.rejected:
-        color = Colors.red;
-        text = 'Rejected';
-        break;
+  List<Widget> _buildActionButtons(CarModel car) {
+    if (car.status == CarStatus.pending) {
+      return [
+        TextButton(
+          onPressed: () => _showApproveDialog(car),
+          child: const Text('Approve', style: TextStyle(color: Colors.green)),
+        ),
+        TextButton(
+          onPressed: () => _showRejectDialog(car),
+          child: const Text('Reject', style: TextStyle(color: Colors.red)),
+        ),
+      ];
+    } else if (car.status == CarStatus.active) {
+      return [
+        TextButton(
+          onPressed: () => _showDeleteDialog(car),
+          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+        ),
+      ];
     }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: CustomText(
-        text: text,
-        size: 12,
-        color: color,
-        fontFamily: 'Inter',
-        weight: FontWeight.w500,
-      ),
-    );
+    return [];
   }
 
   void _showApproveDialog(CarModel car) {

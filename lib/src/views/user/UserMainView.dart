@@ -27,13 +27,6 @@ class _UserMainViewState extends State<UserMainView> {
         style: TextStyle(fontSize: 24),
       ),
     ),
-    // Profile Screen
-    const Center(
-      child: Text(
-        'Profile Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
 
     const ChatView(),
 

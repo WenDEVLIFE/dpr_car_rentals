@@ -9,6 +9,7 @@ import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/ImageZoomView.dart';
 import 'package:dpr_car_rentals/src/widget/ModernSearchBar.dart';
+import 'package:dpr_car_rentals/src/widget/CarDisplayWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -521,56 +522,14 @@ class _UserHomeViewState extends State<UserHomeView> {
           ],
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 200,
-          child: cars.isEmpty
-              ? _buildNoCarsMessage()
-              : ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: cars.length,
-                  itemBuilder: (context, index) {
-                    return _buildApprovedCarCard(cars[index]);
-                  },
-                ),
+        CarGridWidget(
+          cars: cars,
+          onCarTap: (car) => _showCarDetailsDialog(context, car),
+          emptyMessage: 'No cars available',
+          crossAxisCount: 2,
+          childAspectRatio: 0.75,
         ),
       ],
-    );
-  }
-
-  Widget _buildNoCarsMessage() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.directions_car,
-            size: 48,
-            color: Colors.grey[400],
-          ),
-          const SizedBox(height: 12),
-          CustomText(
-            text: 'No cars available',
-            size: 16,
-            color: Colors.grey[600]!,
-            fontFamily: 'Inter',
-            weight: FontWeight.w500,
-          ),
-          const SizedBox(height: 4),
-          CustomText(
-            text: 'Check back later for available vehicles',
-            size: 12,
-            color: Colors.grey[500]!,
-            fontFamily: 'Inter',
-            weight: FontWeight.w400,
-          ),
-        ],
-      ),
     );
   }
 
@@ -583,11 +542,7 @@ class _UserHomeViewState extends State<UserHomeView> {
   }
 
   Widget _buildApprovedCarCard(CarModel car) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
     return Container(
-      width: screenWidth * 0.6,
-      margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -652,7 +607,7 @@ class _UserHomeViewState extends State<UserHomeView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Car Info
+                  // Car info - takes available space
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -679,10 +634,23 @@ class _UserHomeViewState extends State<UserHomeView> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+                        const SizedBox(height: 1),
+                        Text(
+                          car.location,
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: ThemeHelper.textColor1,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ],
                     ),
                   ),
-                  // View Details Button
+
+                  // View Details Button - fixed minimal size
                   SizedBox(
                     height: 24,
                     width: double.infinity,

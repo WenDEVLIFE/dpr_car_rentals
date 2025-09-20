@@ -7,6 +7,7 @@ import 'package:dpr_car_rentals/src/models/CarModel.dart';
 import 'package:dpr_car_rentals/src/widget/CustomButton.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/ImageZoomView.dart';
+import 'package:dpr_car_rentals/src/widget/CarDisplayWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -202,23 +203,13 @@ class _RentACarViewState extends State<RentACarView> {
                     const SizedBox(height: 24),
 
                     // Cars Grid
-                    state.activeCars.isEmpty
-                        ? _buildNoCarsMessage()
-                        : GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: screenWidth > 600 ? 3 : 2,
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                              childAspectRatio: 0.75,
-                            ),
-                            itemCount: state.activeCars.length,
-                            itemBuilder: (context, index) {
-                              return _buildCarCard(state.activeCars[index]);
-                            },
-                          ),
+                    CarGridWidget(
+                      cars: state.activeCars,
+                      onCarTap: (car) => _showCarDetailsDialog(context, car),
+                      emptyMessage: 'No cars available',
+                      crossAxisCount: screenWidth > 600 ? 3 : 2,
+                      childAspectRatio: 0.75,
+                    ),
                   ],
                 ),
               ),
@@ -229,193 +220,6 @@ class _RentACarViewState extends State<RentACarView> {
             child: Text('Welcome to Car Rentals'),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildNoCarsMessage() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.directions_car,
-            size: 64,
-            color: Colors.grey[400],
-          ),
-          const SizedBox(height: 16),
-          CustomText(
-            text: 'No cars available',
-            size: 18,
-            color: Colors.grey[600]!,
-            fontFamily: 'Inter',
-            weight: FontWeight.w500,
-          ),
-          const SizedBox(height: 8),
-          CustomText(
-            text: 'Check back later for available vehicles',
-            size: 14,
-            color: Colors.grey[500]!,
-            fontFamily: 'Inter',
-            weight: FontWeight.w400,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCarCard(CarModel car) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Car Image
-          Expanded(
-            flex: 3,
-            child: Container(
-              decoration: BoxDecoration(
-                color: ThemeHelper.secondaryColor,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-              ),
-              child: car.photoUrl != null
-                  ? ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
-                      ),
-                      child: Image.network(
-                        car.photoUrl!,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(
-                              Icons.directions_car,
-                              size: 40,
-                              color: Colors.grey,
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  : const Center(
-                      child: Icon(
-                        Icons.directions_car,
-                        size: 40,
-                        color: Colors.grey,
-                      ),
-                    ),
-            ),
-          ),
-
-          // Car Details
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Car info - takes available space
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${car.name} ${car.model}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: ThemeHelper.textColor,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          '₱${car.dailyRate.toStringAsFixed(0)}/day',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: ThemeHelper.buttonColor,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          car.location,
-                          style: TextStyle(
-                            fontSize: 9,
-                            color: ThemeHelper.textColor1,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w400,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // View Details Button - fixed minimal size
-                  SizedBox(
-                    height: 24,
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ThemeHelper.buttonColor,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 2, vertical: 0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        minimumSize: const Size(0, 24),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      onPressed: () {
-                        _showCarDetailsDialog(context, car);
-                      },
-                      child: Text(
-                        'View',
-                        style: TextStyle(
-                          fontSize: 9,
-                          color: Colors.white,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

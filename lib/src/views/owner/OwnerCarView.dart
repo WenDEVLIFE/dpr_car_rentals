@@ -10,6 +10,7 @@ import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:dpr_car_rentals/src/widget/CustomTextField.dart';
 import 'package:dpr_car_rentals/src/widget/ImageZoomView.dart';
 import 'package:dpr_car_rentals/src/widget/SearchTextField.dart';
+import 'package:dpr_car_rentals/src/widget/CarDisplayWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -149,48 +150,18 @@ class _OwnerCarViewState extends State<OwnerCarView> {
 
                   // Cars List
                   Expanded(
-                    child: state.filteredCars.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.directions_car_outlined,
-                                  size: 64,
-                                  color: ThemeHelper.textColor1,
-                                ),
-                                const SizedBox(height: 16),
-                                CustomText(
-                                  text: 'No cars found',
-                                  size: 18,
-                                  color: ThemeHelper.textColor,
-                                  fontFamily: 'Inter',
-                                  weight: FontWeight.w500,
-                                ),
-                                const SizedBox(height: 8),
-                                CustomText(
-                                  text: 'Add your first car to get started',
-                                  size: 14,
-                                  color: ThemeHelper.textColor1,
-                                  fontFamily: 'Inter',
-                                  weight: FontWeight.w400,
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton.icon(
-                                  onPressed: () => _showAddCarDialog(),
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Add Car'),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: state.filteredCars.length,
-                            itemBuilder: (context, index) {
-                              return _buildCarCard(state.filteredCars[index]);
-                            },
-                          ),
+                    child: CarListWidget(
+                      cars: state.filteredCars,
+                      onCarTap: (car) => _showCarDetailsDialog(car),
+                      emptyMessage: 'No cars found',
+                      emptySubMessage: 'Add your first car to get started',
+                      emptyActionButton: ElevatedButton.icon(
+                        onPressed: () => _showAddCarDialog(),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add Car'),
+                      ),
+                      actionButtons: (car) => _buildActionButtons(car),
+                    ),
                   ),
                 ],
               );
@@ -201,6 +172,26 @@ class _OwnerCarViewState extends State<OwnerCarView> {
         ),
       ),
     );
+  }
+
+  void _showCarDetailsDialog(CarModel car) {
+    // TODO: Implement car details dialog for owner
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Car details for ${car.name} ${car.model}')),
+    );
+  }
+
+  List<Widget> _buildActionButtons(CarModel car) {
+    return [
+      IconButton(
+        icon: const Icon(Icons.edit, color: Colors.blue),
+        onPressed: () => _showEditCarDialog(car),
+      ),
+      IconButton(
+        icon: const Icon(Icons.delete, color: Colors.red),
+        onPressed: () => _showDeleteDialog(car),
+      ),
+    ];
   }
 
   Widget _buildCarCard(CarModel car) {

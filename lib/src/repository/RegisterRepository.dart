@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../models/ActivityModel.dart';
+import 'ActivityRepository.dart';
 
 abstract class RegisterRepository {
   Future<bool> registerUser({
@@ -259,6 +261,25 @@ class RegisterRepositoryImpl extends RegisterRepository {
         'createdAt': FieldValue.serverTimestamp(),
         'CreatedByAdmin': true, // Mark as admin-created
       });
+
+      // Log activity for admin-created user
+      try {
+        final activityRepository = ActivityRepositoryImpl();
+        await activityRepository.addActivity(ActivityModel(
+          id: '',
+          type: ActivityType.userAdded,
+          title: 'User Added',
+          description: '$fullName was added to the system',
+          userId: null,
+          userName: 'Admin',
+          targetId: uid,
+          targetName: fullName,
+          timestamp: DateTime.now(),
+        ));
+      } catch (activityError) {
+        print('Failed to log activity for user creation: $activityError');
+        // Don't fail the user creation if activity logging fails
+      }
 
       return true;
     } catch (e) {

@@ -33,3 +33,21 @@ class StatisticsData {
     required this.totalRatings,
   });
 }
+
+class ChartData {
+  final List<double> revenueData;
+  final List<int> bookingsData;
+  final List<int> usersData;
+  final int availablePercent;
+  final int bookedPercent;
+  final int maintenancePercent;
+
+  ChartData({
+    required this.revenueData,
+    required this.bookingsData,
+    required this.usersData,
+    required this.availablePercent,
+    required this.bookedPercent,
+    required this.maintenancePercent,
+  });
+}

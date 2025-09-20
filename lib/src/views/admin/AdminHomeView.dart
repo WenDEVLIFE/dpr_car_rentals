@@ -2,22 +2,18 @@ import 'package:dpr_car_rentals/src/bloc/FeedbackBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/ActivityBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/AdminHomeBloc.dart';
 import 'package:dpr_car_rentals/src/bloc/event/ActivityEvent.dart';
-import 'package:dpr_car_rentals/src/bloc/event/AdminHomeEvent.dart';
 import 'package:dpr_car_rentals/src/bloc/state/ActivityState.dart';
 import 'package:dpr_car_rentals/src/bloc/state/AdminHomeState.dart';
 import 'package:dpr_car_rentals/src/helpers/ThemeHelper.dart';
 import 'package:dpr_car_rentals/src/models/ActivityModel.dart';
-import 'package:dpr_car_rentals/src/repository/FeedbackRepository.dart';
 import 'package:dpr_car_rentals/src/repository/ActivityRepository.dart';
-import 'package:dpr_car_rentals/src/repository/CarRepository.dart';
-import 'package:dpr_car_rentals/src/repository/UserRepository.dart';
-import 'package:dpr_car_rentals/src/repository/ReservationRepository.dart';
+import 'package:dpr_car_rentals/src/repository/FeedbackRepository.dart';
 import 'package:dpr_car_rentals/src/views/admin/UserScreen.dart';
 import 'package:dpr_car_rentals/src/views/admin/AllActivitiesView.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'AdminFeedbackView.dart';
 
 class AdminHomeView extends StatefulWidget {
@@ -30,80 +26,50 @@ class AdminHomeView extends StatefulWidget {
 class _AdminHomeViewState extends State<AdminHomeView> {
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<ActivityBloc>(
-          create: (context) => ActivityBloc(ActivityRepositoryImpl())
-            ..add(LoadRecentActivities(limit: 10)),
+    return Scaffold(
+      backgroundColor: ThemeHelper.backgroundColor,
+      appBar: AppBar(
+        title: CustomText(
+          text: 'Admin Dashboard',
+          size: 20,
+          color: Colors.white,
+          fontFamily: 'Inter',
+          weight: FontWeight.w700,
         ),
-        BlocProvider<AdminHomeBloc>(
-          create: (context) => AdminHomeBloc(
-            CarRepositoryImpl(),
-            UserRepositoryImpl(),
-            ReservationRepositoryImpl(),
-            FeedbackRepositoryImpl(),
-          )..add(LoadStatistics()),
-        ),
-      ],
-      child: Scaffold(
-        backgroundColor: ThemeHelper.backgroundColor,
-        appBar: AppBar(
-          title: CustomText(
-            text: 'Admin Dashboard',
-            size: 20,
-            color: Colors.white,
-            fontFamily: 'Inter',
-            weight: FontWeight.w700,
-          ),
-          elevation: 0,
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.notifications),
-              onPressed: () {
-                // TODO: Show notifications
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {
-                // TODO: Show settings
-              },
-            ),
-          ],
-        ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Welcome Section
-                  _buildWelcomeSection(),
+        elevation: 0,
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Welcome Section
+                _buildWelcomeSection(),
 
-                  const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-                  // Statistics Cards
-                  _buildStatisticsCards(),
+                // Statistics Cards
+                _buildStatisticsCards(),
 
-                  const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-                  // Quick Actions
-                  _buildQuickActions(),
+                // Quick Actions
+                _buildQuickActions(),
 
-                  const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-                  // Recent Activities
-                  _buildRecentActivities(),
+                // Recent Activities
+                _buildRecentActivities(),
 
-                  const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-                  // Charts Section (Placeholder)
-                  _buildChartsSection(),
-                ],
-              ),
+                // Charts Section (Placeholder)
+                _buildChartsSection(),
+              ],
             ),
           ),
         ),
@@ -790,15 +756,18 @@ class _AdminHomeViewState extends State<AdminHomeView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CustomText(
-          text: 'Analytics',
+          text: 'Analytics Dashboard',
           size: 20,
           color: ThemeHelper.textColor,
           fontFamily: 'Inter',
           weight: FontWeight.w600,
         ),
         const SizedBox(height: 16),
+
+        // Revenue Chart
         Container(
-          height: 200,
+          height: 250,
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
@@ -810,33 +779,378 @@ class _AdminHomeViewState extends State<AdminHomeView> {
               ),
             ],
           ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.bar_chart,
-                  size: 48,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomText(
+                text: 'Revenue Trend (Last 7 Days)',
+                size: 16,
+                color: ThemeHelper.textColor,
+                fontFamily: 'Inter',
+                weight: FontWeight.w600,
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: FutureBuilder<ChartData>(
+                  future: context.read<AdminHomeBloc>().getChartData(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return LineChart(
+                        _buildRevenueChart(snapshot.data!.revenueData),
+                      );
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Bookings vs Users Chart
+        Container(
+          height: 250,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomText(
+                text: 'Bookings vs Users Growth',
+                size: 16,
+                color: ThemeHelper.textColor,
+                fontFamily: 'Inter',
+                weight: FontWeight.w600,
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: FutureBuilder<ChartData>(
+                  future: context.read<AdminHomeBloc>().getChartData(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return BarChart(
+                        _buildBookingsChart(snapshot.data!.bookingsData,
+                            snapshot.data!.usersData),
+                      );
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Car Utilization Pie Chart
+        Container(
+          height: 250,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomText(
+                text: 'Car Utilization Status',
+                size: 16,
+                color: ThemeHelper.textColor,
+                fontFamily: 'Inter',
+                weight: FontWeight.w600,
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: FutureBuilder<ChartData>(
+                        future: context.read<AdminHomeBloc>().getChartData(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return PieChart(
+                              _buildCarUtilizationChart(
+                                snapshot.data!.availablePercent,
+                                snapshot.data!.bookedPercent,
+                                snapshot.data!.maintenancePercent,
+                              ),
+                            );
+                          } else {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: FutureBuilder<ChartData>(
+                        future: context.read<AdminHomeBloc>().getChartData(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return _buildUtilizationLegend(
+                              snapshot.data!.availablePercent,
+                              snapshot.data!.bookedPercent,
+                              snapshot.data!.maintenancePercent,
+                            );
+                          } else {
+                            return const SizedBox();
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  LineChartData _buildRevenueChart(List<double> revenueData) {
+    return LineChartData(
+      gridData: FlGridData(show: false),
+      titlesData: FlTitlesData(
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            getTitlesWidget: (value, meta) {
+              const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+              if (value.toInt() >= 0 && value.toInt() < days.length) {
+                return Text(
+                  days[value.toInt()],
+                  style: TextStyle(
+                    color: ThemeHelper.textColor1,
+                    fontSize: 12,
+                    fontFamily: 'Inter',
+                  ),
+                );
+              }
+              return const Text('');
+            },
+          ),
+        ),
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            getTitlesWidget: (value, meta) {
+              return Text(
+                '\$${value.toInt()}',
+                style: TextStyle(
                   color: ThemeHelper.textColor1,
-                ),
-                const SizedBox(height: 12),
-                CustomText(
-                  text: 'Revenue & Bookings Chart',
-                  size: 16,
-                  color: ThemeHelper.textColor,
+                  fontSize: 10,
                   fontFamily: 'Inter',
-                  weight: FontWeight.w500,
                 ),
-                const SizedBox(height: 4),
-                CustomText(
-                  text: 'Coming soon in the next update',
-                  size: 14,
+              );
+            },
+          ),
+        ),
+        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      ),
+      borderData: FlBorderData(show: true),
+      lineBarsData: [
+        LineChartBarData(
+          spots: List.generate(revenueData.length, (index) {
+            return FlSpot(index.toDouble(), revenueData[index]);
+          }),
+          isCurved: true,
+          color: Colors.blue,
+          barWidth: 3,
+          belowBarData: BarAreaData(
+            show: true,
+            color: Colors.blue.withOpacity(0.1),
+          ),
+          dotData: FlDotData(show: true),
+        ),
+      ],
+    );
+  }
+
+  BarChartData _buildBookingsChart(
+      List<int> bookingsData, List<int> usersData) {
+    return BarChartData(
+      gridData: FlGridData(show: false),
+      titlesData: FlTitlesData(
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            getTitlesWidget: (value, meta) {
+              const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+              if (value.toInt() >= 0 && value.toInt() < months.length) {
+                return Text(
+                  months[value.toInt()],
+                  style: TextStyle(
+                    color: ThemeHelper.textColor1,
+                    fontSize: 12,
+                    fontFamily: 'Inter',
+                  ),
+                );
+              }
+              return const Text('');
+            },
+          ),
+        ),
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            getTitlesWidget: (value, meta) {
+              return Text(
+                value.toInt().toString(),
+                style: TextStyle(
                   color: ThemeHelper.textColor1,
+                  fontSize: 10,
                   fontFamily: 'Inter',
-                  weight: FontWeight.w400,
                 ),
-              ],
-            ),
+              );
+            },
+          ),
+        ),
+        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      ),
+      borderData: FlBorderData(show: true),
+      barGroups: List.generate(bookingsData.length, (index) {
+        return _buildBarGroup(
+            index, bookingsData[index].toDouble(), usersData[index].toDouble());
+      }),
+    );
+  }
+
+  BarChartGroupData _buildBarGroup(int x, double bookings, double users) {
+    return BarChartGroupData(
+      x: x,
+      barRods: [
+        BarChartRodData(
+          toY: bookings,
+          color: Colors.orange,
+          width: 12,
+        ),
+        BarChartRodData(
+          toY: users,
+          color: Colors.green,
+          width: 12,
+        ),
+      ],
+    );
+  }
+
+  PieChartData _buildCarUtilizationChart(
+      int availablePercent, int bookedPercent, int maintenancePercent) {
+    return PieChartData(
+      sections: [
+        PieChartSectionData(
+          value: availablePercent.toDouble(),
+          title: 'Active\n${availablePercent}%',
+          color: Colors.green,
+          radius: 60,
+          titleStyle: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        PieChartSectionData(
+          value: bookedPercent.toDouble(),
+          title: 'Pending\n${bookedPercent}%',
+          color: Colors.orange,
+          radius: 60,
+          titleStyle: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        PieChartSectionData(
+          value: maintenancePercent.toDouble(),
+          title: 'Inactive\n${maintenancePercent}%',
+          color: Colors.red,
+          radius: 60,
+          titleStyle: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ],
+      sectionsSpace: 2,
+      centerSpaceRadius: 40,
+    );
+  }
+
+  Widget _buildUtilizationLegend(
+      int availablePercent, int bookedPercent, int maintenancePercent) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLegendItem(Colors.green, 'Active', '${availablePercent}%'),
+        const SizedBox(height: 8),
+        _buildLegendItem(Colors.orange, 'Pending', '${bookedPercent}%'),
+        const SizedBox(height: 8),
+        _buildLegendItem(Colors.red, 'Inactive', '${maintenancePercent}%'),
+      ],
+    );
+  }
+
+  Widget _buildLegendItem(Color color, String label, String percentage) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomText(
+                text: label,
+                size: 12,
+                color: ThemeHelper.textColor,
+                fontFamily: 'Inter',
+                weight: FontWeight.w500,
+              ),
+              CustomText(
+                text: percentage,
+                size: 11,
+                color: ThemeHelper.textColor1,
+                fontFamily: 'Inter',
+                weight: FontWeight.w400,
+              ),
+            ],
           ),
         ),
       ],

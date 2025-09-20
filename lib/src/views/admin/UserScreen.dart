@@ -10,6 +10,7 @@ import '../../models/UserModel.dart';
 import '../../repository/RegisterRepository.dart';
 import '../../repository/UserRepository.dart';
 import '../../widget/CustomTextField.dart';
+import '../../widget/CustomPasswordField.dart';
 import '../../widget/SearchTextField.dart';
 
 class UserScreen extends StatefulWidget {
@@ -58,7 +59,10 @@ class _UserScreenState extends State<UserScreen> {
             ),
             if (!isEditing) ...[
               const SizedBox(height: 16),
-              CustomOutlinePassField(hintText: 'Password', labelText: 'Enter Password', controller: passwordController)
+              CustomOutlinePassField(
+                  hintText: 'Password',
+                  labelText: 'Enter Password',
+                  controller: passwordController)
             ],
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(

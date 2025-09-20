@@ -13,6 +13,7 @@ import 'package:dpr_car_rentals/src/repository/CarRepository.dart';
 import 'package:dpr_car_rentals/src/repository/UserRepository.dart';
 import 'package:dpr_car_rentals/src/repository/ReservationRepository.dart';
 import 'package:dpr_car_rentals/src/views/admin/UserScreen.dart';
+import 'package:dpr_car_rentals/src/views/admin/AllActivitiesView.dart';
 import 'package:dpr_car_rentals/src/widget/CustomText.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -494,7 +495,12 @@ class _AdminHomeViewState extends State<AdminHomeView> {
             ),
             TextButton(
               onPressed: () {
-                // TODO: View all activities
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AllActivitiesView(),
+                  ),
+                );
               },
               child: CustomText(
                 text: 'View All',

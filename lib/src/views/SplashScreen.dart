@@ -1,3 +1,4 @@
+import 'package:dpr_car_rentals/src/helpers/ImageHelpers.dart';
 import 'package:dpr_car_rentals/src/helpers/SessionHelpers.dart';
 import 'package:dpr_car_rentals/src/views/LoginScreen.dart';
 import 'package:dpr_car_rentals/src/views/admin/AdminView.dart';
@@ -92,6 +93,16 @@ class _SplashscreenState extends State<Splashscreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(height: screenHeight * 0.4),
+            Container(
+              height: screenHeight * 0.2,
+              width:  screenHeight * 0.2,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(ImageHelpers.logo),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
             CustomText(
                 text: 'DPR CAR RENTAL',
                 size: 20,

@@ -32,11 +32,12 @@ dependencies:
   fl_chart: ^0.68.0
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  bloc_test: ^8.5.0
+ flutter_test:
+   sdk: flutter
+ bloc_test: ^8.5.0
+ flutter_launcher_icons: ^0.13.1
 
-  flutter_lints: ^5.0.0
+ flutter_lints: ^5.0.0
 
 
 flutter:
@@ -46,6 +47,7 @@ flutter:
   assets:
     - .env
     - assets/fonts/
+    - web/
 
   fonts:
     - family: Inter
@@ -65,3 +67,26 @@ flutter:
           weight: 200
         - asset: assets/fonts/Inter_24pt-Black.ttf
           weight: 900
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  background_color: "#F8F8FF"
+  theme_color: "#4A90E2"
+  image_path: "assets/icons/android/play_store_512.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: "assets/icons/android/play_store_512.png"
+    background_color: "#F8F8FF"
+    theme_color: "#4A90E2"
+  windows:
+    generate: true
+    image_path: "assets/icons/android/play_store_512.png"
+    background_color: "#F8F8FF"
+    theme_color: "#4A90E2"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/icons/android/play_store_512.png"

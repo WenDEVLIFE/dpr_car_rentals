@@ -36,7 +36,7 @@ class _OwnerBookingsViewState extends State<OwnerBookingsView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _loadOwnerData();
   }
 
@@ -276,6 +276,7 @@ class _OwnerBookingsViewState extends State<OwnerBookingsView>
             Tab(text: 'Approved'),
             Tab(text: 'In Use'),
             Tab(text: 'Returned'),
+            Tab(text: 'Rejected'),
           ],
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
@@ -289,6 +290,7 @@ class _OwnerBookingsViewState extends State<OwnerBookingsView>
           _buildReservationsList(ReservationStatus.approved),
           _buildReservationsList(ReservationStatus.inUse),
           _buildReservationsList(ReservationStatus.returned),
+          _buildReservationsList(ReservationStatus.rejected),
         ],
       ),
     );
@@ -695,6 +697,31 @@ class _OwnerBookingsViewState extends State<OwnerBookingsView>
             ),
           ],
         );
+      case ReservationStatus.rejected:
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.red[50],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.red[200]!),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.cancel_outlined, color: Colors.red[600], size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: CustomText(
+                  text: 'This booking was rejected. No further action needed.',
+                  size: 12,
+                  color: Colors.red[800]!,
+                  fontFamily: 'Inter',
+                  weight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        );
       default:
         return const SizedBox.shrink();
     }
@@ -721,6 +748,8 @@ class _OwnerBookingsViewState extends State<OwnerBookingsView>
         return Icons.drive_eta;
       case ReservationStatus.returned:
         return Icons.assignment_turned_in;
+      case ReservationStatus.rejected:
+        return Icons.cancel_outlined;
       default:
         return Icons.info;
     }

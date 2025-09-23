@@ -35,10 +35,37 @@ class FirebaseIndexHelper {
         }
       }
 
+      // Enhanced debug information
+      _printDebugSetupInstructions(queryDescription);
+
       print(
           '🔗 General Firebase Console: https://console.firebase.google.com/project/$projectId/firestore/indexes');
       print('===============================================\n');
     }
+  }
+
+  /// Print enhanced debug setup instructions
+  static void _printDebugSetupInstructions(String queryDescription) {
+    print('\n🛠️  DEBUG SETUP INSTRUCTIONS:');
+    print('1. Copy the index creation URL above');
+    print('2. Open it in your browser');
+    print('3. Click "Create Index"');
+    print('4. Wait 1-5 minutes for index to build');
+    print('5. Restart the app and try again');
+
+    if (queryDescription.toLowerCase().contains('rejected')) {
+      print('\n💡 REJECTED BOOKINGS SPECIFIC:');
+      print('   This query is for displaying rejected bookings');
+      print(
+          '   Make sure you have the "rejected" status in your ReservationStatus enum');
+      print(
+          '   The index should include: Status (Ascending), CreatedAt (Descending)');
+    }
+
+    print('\n📞 If issues persist:');
+    print('   - Check your Firebase project permissions');
+    print('   - Verify the project ID matches: $projectId');
+    print('   - Ensure Firestore is enabled in your project');
   }
 
   static void _printIndexLinks(String queryDescription) {
@@ -122,6 +149,23 @@ class FirebaseIndexHelper {
             'https://console.firebase.google.com/v1/r/project/$projectId/firestore/indexes?create_composite=Clhwcm9qZWN0cy9kcHJjYXJyZW50YWwtNzk4N2UvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL25vdGlmaWNhdGlvbnMvaW5kZXhlcy9fEAEaCgoHVXNlcklEEAEaCgoHaXNSZWFkEAE');
         break;
 
+      case 'getrejectedreservations':
+      case 'rejected reservations':
+      case 'rejected bookings':
+        print('❌ Rejected Reservations:');
+        print(
+            'https://console.firebase.google.com/v1/r/project/$projectId/firestore/indexes?create_composite=Clhwcm9qZWN0cy9kcHJjYXJyZW50YWwtNzk4N2UvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL3Jlc2VydmF0aW9ucy9pbmRleGVzL18QARoKCgZTdGF0dXMQARoMCghDcmVhdGVkQXQQAg');
+        print('   💡 This index is for filtering rejected bookings');
+        break;
+
+      case 'getownerrejectedreservations':
+      case 'owner rejected reservations':
+        print('❌ Owner Rejected Reservations:');
+        print(
+            'https://console.firebase.google.com/v1/r/project/$projectId/firestore/indexes?create_composite=Clhwcm9qZWN0cy9kcHJjYXJyZW50YWwtNzk4N2UvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL3Jlc2VydmF0aW9ucy9pbmRleGVzL18QARoKCgZPd25lcklEEAEaCgoGU3RhdHVzEAEaDAoIQ3JlYXRlZEF0EAI');
+        print('   💡 This index is for owner viewing rejected bookings');
+        break;
+
       default:
         print('🔧 Common Indexes:');
         print(
@@ -183,6 +227,18 @@ class FirebaseIndexHelper {
         'description': 'Required for unread notification count',
         'url':
             'https://console.firebase.google.com/v1/r/project/$projectId/firestore/indexes?create_composite=Clhwcm9qZWN0cy9kcHJjYXJyZW50YWwtNzk4N2UvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL25vdGlmaWNhdGlvbnMvaW5kZXhlcy9fEAEaCgoHVXNlcklEEAEaCgoHaXNSZWFkEAE'
+      },
+      {
+        'name': '❌ Rejected Reservations',
+        'description': 'Required for displaying rejected bookings',
+        'url':
+            'https://console.firebase.google.com/v1/r/project/$projectId/firestore/indexes?create_composite=Clhwcm9qZWN0cy9kcHJjYXJyZW50YWwtNzk4N2UvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL3Jlc2VydmF0aW9ucy9pbmRleGVzL18QARoKCgZTdGF0dXMQARoMCghDcmVhdGVkQXQQAg'
+      },
+      {
+        'name': '❌ Owner Rejected Reservations',
+        'description': 'Required for owner viewing rejected bookings',
+        'url':
+            'https://console.firebase.google.com/v1/r/project/$projectId/firestore/indexes?create_composite=Clhwcm9qZWN0cy9kcHJjYXJyZW50YWwtNzk4N2UvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL3Jlc2VydmF0aW9ucy9pbmRleGVzL18QARoKCgZPd25lcklEEAEaCgoGU3RhdHVzEAEaDAoIQ3JlYXRlZEF0EAI'
       },
     ];
 

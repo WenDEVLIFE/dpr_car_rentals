@@ -35,7 +35,7 @@ class _UserBookingsViewState extends State<UserBookingsView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     _loadUserData();
   }
 
@@ -318,7 +318,6 @@ class _UserBookingsViewState extends State<UserBookingsView>
           color: Colors.white,
           fontFamily: 'Inter',
           weight: FontWeight.w700,
-
         ),
         actions: [
           UnreadNotificationBadge(
@@ -340,6 +339,7 @@ class _UserBookingsViewState extends State<UserBookingsView>
             Tab(text: 'In Use'),
             Tab(text: 'Returned'),
             Tab(text: 'Cancelled'),
+            Tab(text: 'Rejected'),
           ],
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
@@ -354,6 +354,7 @@ class _UserBookingsViewState extends State<UserBookingsView>
           _buildReservationsList(ReservationStatus.inUse),
           _buildReservationsList(ReservationStatus.returned),
           _buildReservationsList(ReservationStatus.cancelled),
+          _buildReservationsList(ReservationStatus.rejected),
         ],
       ),
     );
@@ -679,6 +680,32 @@ class _UserBookingsViewState extends State<UserBookingsView>
             ],
           ),
         );
+      case ReservationStatus.rejected:
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.red[50],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.red[200]!),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.cancel_outlined, color: Colors.red[600], size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: CustomText(
+                  text:
+                      'Your booking was rejected. You can try booking another car.',
+                  size: 12,
+                  color: Colors.red[800]!,
+                  fontFamily: 'Inter',
+                  weight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        );
       default:
         return const SizedBox.shrink();
     }
@@ -706,6 +733,8 @@ class _UserBookingsViewState extends State<UserBookingsView>
         return 'No completed rentals yet';
       case ReservationStatus.cancelled:
         return 'No cancelled bookings';
+      case ReservationStatus.rejected:
+        return 'No rejected bookings';
       default:
         return 'No bookings found';
     }
@@ -723,6 +752,8 @@ class _UserBookingsViewState extends State<UserBookingsView>
         return Icons.assignment_turned_in;
       case ReservationStatus.cancelled:
         return Icons.cancel;
+      case ReservationStatus.rejected:
+        return Icons.cancel_outlined;
       default:
         return Icons.info;
     }
